@@ -1,0 +1,51 @@
+@import './tokens.css';
+
+@font-face {
+  font-family: 'Space Grotesk';
+  src: url('/fonts/SpaceGrotesk-Regular.woff2') format('woff2'),
+       url('/fonts/SpaceGrotesk-SemiBold.woff2') format('woff2');
+  font-weight: 400 600;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'IBM Plex Sans';
+  src: url('/fonts/IBMPlexSans-Regular.woff2') format('woff2'),
+       url('/fonts/IBMPlexSans-Medium.woff2') format('woff2');
+  font-weight: 400 500;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'IBM Plex Mono';
+  src: url('/fonts/IBMPlexMono-Regular.woff2') format('woff2'),
+       url('/fonts/IBMPlexMono-Medium.woff2') format('woff2');
+  font-weight: 400 500;
+  font-display: swap;
+}
+
+body {
+  background-color: var(--canvas);
+  background-image:
+    linear-gradient(rgba(42, 70, 85, 0.22) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(42, 70, 85, 0.22) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+/* no radius anywhere — v2 constraint */
+* { border-radius: 0 !important; }
+
+::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--canvas);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--grid-line);
+}

@@ -1,0 +1,11 @@
+name: CI
+on: [pull_request]
+jobs:
+  guardrails:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: pip install pre-commit
+      - run: pre-commit run --all-files
+      - run: cd client && npm ci && npm test
+      - run: cd server && pip install -r requirements.txt && pytest

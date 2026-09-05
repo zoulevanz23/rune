@@ -1,0 +1,54 @@
+:root {
+  /* v2 instrument-grade palette — flat elevation only */
+  --canvas: #0D1A24;
+  --surface: #14262F;
+  --surface-alt: #1C2F3A;
+  --grid-line: #2A4655;
+  --paper: #E8E3D4;
+  --ink: #12181C;
+  --ink-soft: #4B5A62;
+  --bright: #EAF1F7;
+  --fog: #8FA6B5;
+
+  --amber: #C98A34;
+  --coral: #BD5646;
+  --teal: #3A8078;
+  --violet: #6E62AE;
+  --sage: #5F8552;
+
+  /* legacy aliases — keep existing components working during v2 migration */
+  --blue-deep: var(--canvas);
+  --blue-mid: var(--surface-alt);
+  --blue-grid: var(--grid-line);
+  --blue-grid-faint: rgba(42, 70, 85, 0.35);
+  --sky: var(--bright);
+  --sky-dim: var(--fog);
+  --paper-shadow: rgba(0,0,0,0);
+  --chamfer: 14px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--canvas);
+  font-family: 'IBM Plex Sans', sans-serif;
+  color: var(--bright);
+  min-height: 100vh;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Space Grotesk', sans-serif;
+  color: var(--bright);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
