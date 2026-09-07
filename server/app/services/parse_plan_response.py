@@ -3,7 +3,7 @@ import re
 from typing import Any
 from pydantic import ValidationError
 
-from server.app.schemas.plan import Plan
+from app.schemas.plan import Plan
 
 
 def parse_plan_response(raw: str) -> dict[str, Any]:

@@ -1,8 +1,8 @@
 import asyncio
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from server.app.services.parse_plan_response import parse_and_validate
-from server.app.services.refine_prompt import build_refine_prompt
+from app.services.parse_plan_response import parse_and_validate
+from app.services.refine_prompt import build_refine_prompt
 
 router = APIRouter()
 
@@ -15,7 +15,7 @@ class RefineRequest(BaseModel):
 @router.post("/refine")
 async def refine(request: RefineRequest):
     try:
-        from server.app.services.gemini_client import GeminiClient
+        from app.services.gemini_client import GeminiClient
         prompt = build_refine_prompt(request.plan, request.instruction)
         client = GeminiClient()
         raw = await client.refine_plan(prompt)

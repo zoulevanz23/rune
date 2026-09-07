@@ -1,9 +1,9 @@
 import asyncio
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from server.app.services.parse_plan_response import parse_and_validate
-from server.app.services.generate_prompt import build_scrum_prompt, build_kanban_prompt
-from server.app.types import GenerationConfig
+from app.services.parse_plan_response import parse_and_validate
+from app.services.generate_prompt import build_scrum_prompt, build_kanban_prompt
+from app.types import GenerationConfig
 
 router = APIRouter()
 
@@ -26,7 +26,7 @@ async def generate(config: GenerateRequest):
             prompt = build_kanban_prompt(gc)
         else:
             prompt = build_scrum_prompt(gc)
-        from server.app.services.gemini_client import GeminiClient
+        from app.services.gemini_client import GeminiClient
         client = GeminiClient()
         raw = await client.generate_plan(prompt)
         plan = await parse_and_validate(raw)

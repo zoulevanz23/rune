@@ -1,5 +1,5 @@
 import asyncio
-from server.app.config import settings
+from app.config import settings
 
 
 class GeminiClient:

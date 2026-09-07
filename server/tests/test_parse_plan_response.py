@@ -1,5 +1,5 @@
 import pytest
-from server.app.services.parse_plan_response import parse_plan_response, validate_plan
+from app.services.parse_plan_response import parse_plan_response, validate_plan
 
 
 def test_parse_clean_json():
@@ -27,7 +27,7 @@ def test_validate_plan():
 
 
 def test_validate_invalid():
-    from server.app.services.parse_plan_response import parse_and_validate
+    from app.services.parse_plan_response import parse_and_validate
     # Bad JSON should raise ValueError
     with pytest.raises(ValueError):
         import asyncio

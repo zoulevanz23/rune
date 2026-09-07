@@ -1,4 +1,4 @@
-from server.app.types import GenerationConfig
+from app.types import GenerationConfig
 
 
 def build_scrum_prompt(config: GenerationConfig) -> str:
