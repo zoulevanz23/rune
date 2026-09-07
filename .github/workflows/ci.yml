@@ -40,8 +40,6 @@ jobs:
           context: ./server
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/rune-backend:latest
-          cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/rune-backend:buildcache
-          cache-to: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/rune-backend:buildcache,mode=max
 
       - name: Build and push frontend
         uses: docker/build-push-action@v5
@@ -49,5 +47,3 @@ jobs:
           context: ./client
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/rune-frontend:latest
-          cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/rune-frontend:buildcache
-          cache-to: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/rune-frontend:buildcache,mode=max
