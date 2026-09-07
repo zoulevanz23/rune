@@ -12,8 +12,8 @@ RUN npm ci
 # Copy source code
 COPY . .
 
-# Copy .env file for build-time variables
-COPY .env ./
+# Copy .env.example as default .env if .env doesn't exist
+RUN cp .env.example .env || true
 
 # Build the application
 RUN npm run build
