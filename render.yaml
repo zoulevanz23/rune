@@ -9,7 +9,7 @@ services:
       - key: GOOGLE_API_KEY
         sync: false
       - key: ALLOWED_ORIGIN
-        value: https://rune-frontend.onrender.com
+        value: https://rune-frontend-b2j6.onrender.com
 
   - type: web
     name: rune-frontend
