@@ -15,8 +15,8 @@ COPY . .
 # Copy .env.example as default .env if .env doesn't exist
 RUN cp .env.example .env || true
 
-# Build the application
-RUN npm run build
+# Build the application (try vite build directly)
+RUN npx vite build
 
 # Production stage
 FROM nginx:alpine
