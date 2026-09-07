@@ -12,10 +12,9 @@ RUN npm ci
 # Copy source code
 COPY . .
 
-# Copy .env.example as default .env if .env doesn't exist
-RUN cp .env.example .env || true
+# Create .env with production URL for build
+RUN echo "VITE_API_BASE_URL=https://rune-backend.onrender.com" > .env
 
-# Build the application (try vite build directly)
 RUN npx vite build
 
 # Production stage
