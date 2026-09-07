@@ -12,7 +12,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: pip install pre-commit
-      - run: pre-commit run guard-secrets block-direct-api-calls schema-sync --all-files
+      - run: pre-commit run guard-secrets --all-files
+      - run: pre-commit run block-direct-api-calls --all-files
+      - run: pre-commit run schema-sync --all-files
       - run: cd client && npm ci && npm test
       - run: cd server && pip install -r requirements.txt && pytest
 
