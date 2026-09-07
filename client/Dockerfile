@@ -13,7 +13,7 @@ RUN npm ci
 COPY . .
 
 # Create .env with production URL for build
-RUN echo "VITE_API_BASE_URL=https://rune-backend.onrender.com" > .env
+RUN echo "VITE_API_BASE_URL=https://rune-backend-b5n5.onrender.com" > .env
 
 RUN npx vite build
 
