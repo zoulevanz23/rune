@@ -17,7 +17,6 @@ services:
     plan: free
     dockerContext: ./client
     dockerfilePath: ./client/Dockerfile
-    dockerArgs:
-      build:
-        args:
-          VITE_API_BASE_URL: https://rune-backend.onrender.com
+    envVars:
+      - key: VITE_API_BASE_URL
+        value: https://rune-backend.onrender.com
