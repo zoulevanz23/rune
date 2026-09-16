@@ -1,5 +1,5 @@
 :root {
-  /* v2 instrument-grade palette — flat elevation only */
+  /* v2 instrument-grade palette — dark theme (default) */
   --canvas: #0D1A24;
   --surface: #14262F;
   --surface-alt: #1C2F3A;
@@ -25,6 +25,43 @@
   --sky-dim: var(--fog);
   --paper-shadow: rgba(0,0,0,0);
   --chamfer: 14px;
+
+  /* density defaults (comfortable) */
+  --row-height: 44px;
+  --card-padding: 0.7rem 0.8rem;
+  --font-size-sm: 0.72rem;
+  --font-size-base: 0.86rem;
+  --gap-sm: 0.5rem;
+}
+
+/* Light theme — keep paper light, adjust canvas/surface only */
+[data-theme="light"] {
+  --canvas: #F4F1EB;
+  --surface: #FFFFFF;
+  --surface-alt: #EBE7DD;
+  --grid-line: #C9C2B5;
+  --paper: #FFFEF7;
+  --ink: #12181C;
+  --ink-soft: #5A6B75;
+  --bright: #0D1A24;
+  --fog: #6B7D8A;
+}
+
+/* Density overrides — specificity beats :root */
+[data-density="compact"] {
+  --row-height: 28px;
+  --card-padding: 0.4rem 0.5rem;
+  --font-size-sm: 0.65rem;
+  --font-size-base: 0.75rem;
+  --gap-sm: 0.3rem;
+}
+
+[data-density="comfortable"] {
+  --row-height: 44px;
+  --card-padding: 0.7rem 0.8rem;
+  --font-size-sm: 0.72rem;
+  --font-size-base: 0.86rem;
+  --gap-sm: 0.5rem;
 }
 
 * {

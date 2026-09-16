@@ -8,19 +8,23 @@ import { GroupColumn } from '@/components/board/GroupColumn'
 import { EpicLegend } from '@/components/board/EpicLegend'
 import { TimelineStrip } from '@/components/board/TimelineStrip'
 import { RefineBar } from '@/components/board/RefineBar'
-import { toMarkdown, downloadCsv } from '@/lib/export'
+import { ShortcutsModal } from '@/components/board/ShortcutsModal'
+import { toMarkdown, downloadCsv, exportToPdf } from '@/lib/export'
 import { Button } from '@/components/shared/Button'
-import { Story, Plan } from '@/types/plan'
+import { Story } from '@/types/plan'
 
 export const BoardPage: React.FC<{ apiBaseUrl: string }> = ({ apiBaseUrl }) => {
-  const { plan, dispatch } = usePlan()
+  const { plan, dispatch, state } = usePlan()
   const { refine, loading: refining } = useRefinePlan(apiBaseUrl)
   const { save, remove: removePlan } = usePlansRepository()
-  const [prevPlan, setPrevPlan] = useState<Plan | null>(null)
   const [activeId, setActiveId] = useState<string | null>(null)
   const [toast, setToast] = useState<string | null>(null)
   const [showAddGroup, setShowAddGroup] = useState(false)
   const [newGroupName, setNewGroupName] = useState('')
+  const [showShortcuts, setShowShortcuts] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [bulkTarget, setBulkTarget] = useState('')
 
   const doneColumnIndex = plan.groups.findIndex(g => g.type === 'column' && (g as any).name === 'Done')
   const isGroupDrag = !!activeId?.startsWith('group-')
@@ -93,14 +97,129 @@ export const BoardPage: React.FC<{ apiBaseUrl: string }> = ({ apiBaseUrl }) => {
     setTimeout(()=>setToast(null),2000)
   }, [plan.groups, dispatch])
   const handleRefine = useCallback(async (instruction: string) => {
-    setPrevPlan(JSON.parse(JSON.stringify(plan)))
     const updated = await refine(plan, instruction)
     if (updated) { dispatch({ type: 'SET_PLAN', payload: updated }); save(updated).catch(() => setToast('Auto-save failed')) }
   }, [plan, refine, dispatch, save])
-  const handleUndo = useCallback(() => { if (prevPlan) { dispatch({ type: 'SET_PLAN', payload: prevPlan }); setPrevPlan(null) } }, [prevPlan, dispatch])
+  const handleUndo = useCallback(() => { dispatch({ type: 'UNDO' }) }, [dispatch])
+  const handleRedo = useCallback(() => { dispatch({ type: 'REDO' }) }, [dispatch])
+  const canUndo = !!(state.previousPlan || (state.past && state.past.length > 0))
+  const canRedo = !!(state.future && state.future.length > 0)
   const handleSave = useCallback(async () => { try { await save(plan); setToast('Plan saved'); setTimeout(() => setToast(null), 3000) } catch { setToast('Save failed'); setTimeout(() => setToast(null), 3000) } }, [plan, save])
   const handleExportMarkdown = useCallback(() => { const md = toMarkdown(plan); navigator.clipboard.writeText(md).catch(() => {}); setToast('Markdown copied to clipboard'); setTimeout(() => setToast(null), 3000) }, [plan])
   const handleExportCsv = useCallback(() => { downloadCsv(plan); setToast('CSV downloaded'); setTimeout(() => setToast(null), 3000) }, [plan])
+  const handleExportPdf = useCallback(() => { exportToPdf(plan); setToast('PDF exported'); setTimeout(() => setToast(null), 3000) }, [plan])
+
+  // helpers for bulk + search
+  const toggleSelect = useCallback((id: string) => {
+    setSelectedIds(prev => {
+      const n = new Set(prev)
+      if (n.has(id)) n.delete(id)
+      else n.add(id)
+      return n
+    })
+  }, [])
+  const handleBulkDelete = useCallback(() => {
+    if (selectedIds.size === 0) return
+    if (!confirm(`Delete ${selectedIds.size} stories?`)) return
+    dispatch({ type: 'BULK_DELETE', payload: { storyIds: Array.from(selectedIds) } })
+    setSelectedIds(new Set())
+    setToast(`Deleted ${selectedIds.size} stories`)
+    setTimeout(()=>setToast(null),2000)
+  }, [selectedIds, dispatch])
+  const handleBulkDone = useCallback((done: boolean) => {
+    if (selectedIds.size === 0) return
+    dispatch({ type: 'BULK_TOGGLE_DONE', payload: { storyIds: Array.from(selectedIds), done } })
+    setSelectedIds(new Set())
+    setToast(`${done ? 'Marked done' : 'Marked undone'}: ${selectedIds.size}`)
+    setTimeout(()=>setToast(null),2000)
+  }, [selectedIds, dispatch])
+  const handleBulkMove = useCallback(() => {
+    if (selectedIds.size === 0 || bulkTarget === '') return
+    dispatch({ type: 'BULK_MOVE', payload: { storyIds: Array.from(selectedIds), toGroupIndex: Number(bulkTarget) } })
+    setToast(`Moved ${selectedIds.size} stories`)
+    setTimeout(()=>setToast(null),2000)
+    setSelectedIds(new Set())
+    setBulkTarget('')
+  }, [selectedIds, bulkTarget, dispatch])
+
+  const matchesSearch = useCallback((story: Story, epicName?: string) => {
+    if (!searchQuery.trim()) return true
+    const q = searchQuery.toLowerCase()
+    return story.title.toLowerCase().includes(q) || story.id.toLowerCase().includes(q) || story.criteria.join(' ').toLowerCase().includes(q) || (epicName && epicName.toLowerCase().includes(q)) || story.priority.toLowerCase().includes(q)
+  }, [searchQuery])
+
+  // Global keyboard shortcuts
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement
+      const isInput = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable
+
+      // search focus shortcuts always work (even in input? check)
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault()
+        document.getElementById('board-search')?.focus()
+        return
+      }
+      if (e.key === '/' && !isInput) {
+        e.preventDefault()
+        document.getElementById('board-search')?.focus()
+        return
+      }
+
+      if (isInput) return
+
+      if (e.key === '?' && e.shiftKey) {
+        e.preventDefault()
+        setShowShortcuts(true)
+        return
+      }
+      if (e.key === 'Escape') {
+        if (searchQuery) { setSearchQuery(''); return }
+        if (selectedIds.size) { setSelectedIds(new Set()); return }
+        setShowShortcuts(false)
+        return
+      }
+      if (e.key === 'm' && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault()
+        handleExportMarkdown()
+        return
+      }
+      if (e.key === 'e' && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault()
+        handleExportCsv()
+        return
+      }
+      if (e.key === 'p' && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault()
+        handleExportPdf()
+        return
+      }
+      if (e.key === 's' && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault()
+        handleSave()
+        return
+      }
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'z') {
+        e.preventDefault()
+        if (e.shiftKey) handleRedo()
+        else handleUndo()
+        return
+      }
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'y') {
+        e.preventDefault()
+        handleRedo()
+        return
+      }
+      if (e.key === 'r' && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault()
+        const refineInput = document.querySelector('input[placeholder*="Refine"]') as HTMLInputElement
+        refineInput?.focus()
+        return
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [handleExportMarkdown, handleExportCsv, handleExportPdf, handleSave, handleUndo, handleRedo, searchQuery, selectedIds.size])
 
   const handleDragEnd = useCallback((event: DragEndEvent) => {
     const { active, over } = event
@@ -175,8 +294,10 @@ export const BoardPage: React.FC<{ apiBaseUrl: string }> = ({ apiBaseUrl }) => {
         <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap', flexShrink: 0, alignItems:'center' }}>
           <Button variant="ghost" onClick={handleExportMarkdown} style={{ fontSize: '0.7rem', padding: '0.4em 0.7em' }}>Copy Markdown</Button>
           <Button variant="ghost" onClick={handleExportCsv} style={{ fontSize: '0.7rem', padding: '0.4em 0.7em' }}>Export CSV</Button>
+          <Button variant="ghost" onClick={handleExportPdf} style={{ fontSize: '0.7rem', padding: '0.4em 0.7em' }}>Export PDF</Button>
           <Button variant="ghost" onClick={handleSave} style={{ fontSize: '0.7rem', padding: '0.4em 0.7em' }}>Save</Button>
           <Button variant="ghost" onClick={() => { removePlan(plan.project_name || 'plan').catch(() => {}) }} style={{ fontSize: '0.7rem', padding: '0.4em 0.7em' }}>Delete</Button>
+          <Button variant="ghost" onClick={() => setShowShortcuts(true)} style={{ fontSize: '0.7rem', padding: '0.4em 0.7em' }} title="Shortcuts (?)">⌘?</Button>
         </div>
       </div>
 
@@ -189,20 +310,54 @@ export const BoardPage: React.FC<{ apiBaseUrl: string }> = ({ apiBaseUrl }) => {
         <div style={{ fontSize:'0.72rem', color:'var(--ink-soft)', lineHeight:1.45, marginBottom:8 }}>
           Describe changes in plain language — the board updates live. Try <span style={{ color:'var(--ink)', fontFamily:"'IBM Plex Mono', monospace", fontSize:'0.68rem' }}>'make sprint 2 focus on onboarding'</span> · <span style={{ color:'var(--ink)', fontFamily:"'IBM Plex Mono', monospace", fontSize:'0.68rem' }}>'split epic E2'</span> · <span style={{ color:'var(--ink)', fontFamily:"'IBM Plex Mono', monospace", fontSize:'0.68rem' }}>'move US-101 to Done'</span> · then <span style={{ color:'var(--ink)', fontFamily:"'IBM Plex Mono', monospace", fontSize:'0.68rem' }}>Undo</span> to revert.
         </div>
-        <RefineBar onRefine={handleRefine} loading={refining} onUndo={handleUndo} canUndo={!!prevPlan} />
+        <RefineBar onRefine={handleRefine} loading={refining} onUndo={handleUndo} canUndo={canUndo} />
+        {canRedo && <div style={{ marginTop: 6, textAlign: 'right' }}><button onClick={handleRedo} style={{ fontFamily:"'IBM Plex Mono', monospace", fontSize:'0.6rem', background:'var(--surface)', border:'1px solid var(--grid-line)', color:'var(--ink-soft)', cursor:'pointer', padding:'2px 8px' }}>Redo ↷</button></div>}
       </div>
 
-      {plan.methodology === 'scrum' && plan.groups.filter(g => g.type === 'sprint').length > 0 && (
-        <TimelineStrip sprintCount={plan.groups.filter(g => g.type === 'sprint').length} sprintLength="2 weeks" />
+      {/* search + bulk toolbar */}
+      <div style={{ display:'flex', gap: '0.5rem', flexWrap:'wrap', alignItems:'center', background:'var(--surface)', border:'1px solid var(--grid-line)', clipPath:'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)', padding:'0.6rem 0.7rem' }}>
+        <div style={{ flex:'1 1 220px', display:'flex', alignItems:'center', gap:6, background:'var(--paper)', border:'1px solid var(--grid-line)', padding:'0.35rem 0.5rem' }}>
+          <span style={{ fontFamily:"'IBM Plex Mono', monospace", fontSize:'0.6rem', color:'var(--fog)' }}>⌕</span>
+          <input id="board-search" value={searchQuery} onChange={e=>setSearchQuery(e.target.value)} placeholder="Search — title, ID, epic, priority …  (/ or Cmd+K)" style={{ flex:1, border:'none', outline:'none', background:'transparent', fontFamily:"'IBM Plex Sans', sans-serif", fontSize:'0.78rem', color:'var(--ink)' }} />
+          {searchQuery && <button onClick={()=>setSearchQuery('')} style={{ fontSize:'0.6rem', background:'var(--ink)', color:'var(--paper)', border:'none', cursor:'pointer', padding:'2px 5px', fontFamily:"'IBM Plex Mono', monospace" }}>✕</button>}
+        </div>
+        <span style={{ fontFamily:"'IBM Plex Mono', monospace", fontSize:'0.58rem', color:'var(--fog)', whiteSpace:'nowrap' }}>{plan.groups.flatMap(g=>g.stories).filter(s=>matchesSearch(s, plan.epics.find(e=>e.id===s.epic_id)?.name)).length}/{plan.groups.flatMap(g=>g.stories).length} match</span>
+        <span style={{ fontFamily:"'IBM Plex Mono', monospace", fontSize:'0.58rem', color:'var(--fog)' }}>·</span>
+        <span style={{ fontFamily:"'IBM Plex Mono', monospace", fontSize:'0.58rem', color:'var(--fog)' }}>{state.past.length} undo · {state.future.length} redo</span>
+        <button onClick={handleUndo} disabled={!canUndo} style={{ fontFamily:"'IBM Plex Mono', monospace", fontSize:'0.62rem', padding:'0.3rem 0.5rem', border:'1px solid var(--grid-line)', background: canUndo ? 'var(--surface-alt)' : 'transparent', color: canUndo ? 'var(--bright)' : 'var(--fog)', cursor: canUndo ? 'pointer':'not-allowed', opacity: canUndo ? 1 : 0.5 }}>↩ Undo</button>
+        <button onClick={handleRedo} disabled={!canRedo} style={{ fontFamily:"'IBM Plex Mono', monospace", fontSize:'0.62rem', padding:'0.3rem 0.5rem', border:'1px solid var(--grid-line)', background: canRedo ? 'var(--surface-alt)' : 'transparent', color: canRedo ? 'var(--bright)' : 'var(--fog)', cursor: canRedo ? 'pointer':'not-allowed', opacity: canRedo ? 1 : 0.5 }}>↷ Redo</button>
+      </div>
+
+      {selectedIds.size > 0 && (
+        <div style={{ display:'flex', gap:'0.5rem', flexWrap:'wrap', alignItems:'center', background:'var(--amber)', border:'1px solid var(--amber)', clipPath:'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)', padding:'0.6rem 0.7rem', color:'#fff' }}>
+          <span style={{ fontFamily:"'IBM Plex Mono', monospace", fontSize:'0.62rem', fontWeight:600 }}>{selectedIds.size} SELECTED</span>
+          <button onClick={()=>handleBulkDone(true)} style={{ fontFamily:"'IBM Plex Mono', monospace", fontSize:'0.62rem', padding:'0.3rem 0.5rem', background:'#fff', color:'var(--ink)', border:'none', cursor:'pointer' }}>✓ Done</button>
+          <button onClick={()=>handleBulkDone(false)} style={{ fontFamily:"'IBM Plex Mono', monospace", fontSize:'0.62rem', padding:'0.3rem 0.5rem', background:'transparent', color:'#fff', border:'1px solid rgba(255,255,255,0.6)', cursor:'pointer' }}>○ Undone</button>
+          <select value={bulkTarget} onChange={e=>setBulkTarget(e.target.value)} style={{ fontFamily:"'IBM Plex Mono', monospace", fontSize:'0.62rem', padding:'0.3rem', border:'1px solid rgba(255,255,255,0.6)', background:'#fff', color:'var(--ink)' }}>
+            <option value="">Move to…</option>
+            {plan.groups.map((g,i)=><option key={i} value={i}>{g.type==='sprint' ? `Sprint ${(g as any).number} — ${(g as any).name}` : (g as any).name}</option>)}
+          </select>
+          <button onClick={handleBulkMove} disabled={bulkTarget===''} style={{ fontFamily:"'IBM Plex Mono', monospace", fontSize:'0.62rem', padding:'0.3rem 0.5rem', background: bulkTarget ? '#fff' : 'rgba(255,255,255,0.3)', color:'var(--ink)', border:'none', cursor: bulkTarget ? 'pointer':'not-allowed', opacity: bulkTarget?1:0.6 }}>Move</button>
+          <button onClick={handleBulkDelete} style={{ fontFamily:"'IBM Plex Mono', monospace", fontSize:'0.62rem', padding:'0.3rem 0.5rem', background:'var(--coral)', color:'#fff', border:'1px solid #fff', cursor:'pointer' }}>Delete</button>
+          <button onClick={()=>setSelectedIds(new Set())} style={{ marginLeft:'auto', fontFamily:"'IBM Plex Mono', monospace", fontSize:'0.62rem', padding:'0.3rem 0.5rem', background:'transparent', color:'#fff', border:'1px solid rgba(255,255,255,0.6)', cursor:'pointer' }}>Clear</button>
+        </div>
       )}
 
-      <EpicLegend epics={plan.epics} />
+      {plan.methodology === 'scrum' && plan.groups.filter(g => g.type === 'sprint').length > 0 && (
+        <TimelineStrip
+          sprintCount={plan.groups.filter(g => g.type === 'sprint').length}
+          sprintLength="2 weeks"
+          plan={plan}
+        />
+      )}
+
+      <EpicLegend epics={plan.epics} plan={plan} />
 
       <DndContext collisionDetection={closestCorners} onDragEnd={handleDragEnd} onDragStart={handleDragStart}>
         <SortableContext items={plan.groups.map((_,i)=>`group-${i}`)} strategy={horizontalListSortingStrategy}>
           <div style={{ display: 'flex', gap: '0.7rem', overflowX: 'auto', paddingBottom: '0.6rem', alignItems:'flex-start' }}>
             {plan.groups.map((group, i) => (
-              <GroupColumn key={`${group.type}-${(group as any).name}-${i}`} group={group} groupIndex={i} epics={plan.epics} doneColumnIndex={doneColumnIndex} onEditStory={handleEditStory} onDeleteStory={handleDeleteStory} onCyclePoints={handleCyclePoints} onToggleDone={handleToggleDone} onAddStory={handleAddStory} onMoveToDone={handleMoveToDone} onRenameGroup={handleRenameGroup} onDeleteGroup={handleDeleteGroup} />
+              <GroupColumn key={`${group.type}-${(group as any).name}-${i}`} group={group} groupIndex={i} epics={plan.epics} doneColumnIndex={doneColumnIndex} onEditStory={handleEditStory} onDeleteStory={handleDeleteStory} onCyclePoints={handleCyclePoints} onToggleDone={handleToggleDone} onAddStory={handleAddStory} onMoveToDone={handleMoveToDone} onRenameGroup={handleRenameGroup} onDeleteGroup={handleDeleteGroup} selectedIds={selectedIds} onToggleSelect={toggleSelect} matchesSearch={matchesSearch} />
             ))}
             {showAddGroup ? (
               <div style={{ minWidth: 280, maxWidth: 320, background:'var(--surface)', border:'1px dashed var(--amber)', clipPath:'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)', padding:'0.8rem', flexShrink:0, alignSelf:'flex-start' }}>
@@ -241,6 +396,7 @@ export const BoardPage: React.FC<{ apiBaseUrl: string }> = ({ apiBaseUrl }) => {
       </DndContext>
 
       {toast && <div style={{ position: 'fixed', bottom: '1.2rem', right: '1.2rem', background: 'var(--paper)', color: 'var(--ink)', padding: '0.6rem 0.9rem', border: '1px solid var(--grid-line)', fontFamily: "'IBM Plex Mono', monospace", fontSize: '0.65rem', zIndex: 1000 }}>{toast}</div>}
+      <ShortcutsModal isOpen={showShortcuts} onClose={() => setShowShortcuts(false)} />
     </div>
   )
 }

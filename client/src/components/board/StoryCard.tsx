@@ -9,16 +9,19 @@ interface StoryCardProps {
   story: Story
   epicName?: string
   epicIndex: number
-  onEdit: (field: string, value: string) => void
+  onEdit: (field: string, value: any) => void
   onDelete: () => void
   onCyclePoints: () => void
   onToggleDone: () => void
   onMoveToDone?: () => void
   isDoneColumn?: boolean
+  selected?: boolean
+  onToggleSelect?: () => void
+  dimmed?: boolean
 }
 
 export const StoryCard: React.FC<StoryCardProps> = ({
-  story, epicName, epicIndex, onEdit, onDelete, onCyclePoints, onToggleDone, onMoveToDone, isDoneColumn,
+  story, epicName, epicIndex, onEdit, onDelete, onCyclePoints, onToggleDone, onMoveToDone, isDoneColumn, selected, onToggleSelect, dimmed,
 }) => {
   const [editing, setEditing] = useState(false)
   const [expanded, setExpanded] = useState(false)
@@ -44,17 +47,18 @@ export const StoryCard: React.FC<StoryCardProps> = ({
   } = useSortable({ id: story.id, disabled: editing })
 
   const style: React.CSSProperties = {
-    background: 'var(--paper)',
+    background: selected ? 'rgba(201,138,52,0.08)' : 'var(--paper)',
     color: 'var(--ink)',
-    border: '1px solid var(--grid-line)',
+    border: `1px solid ${selected ? 'var(--amber)' : 'var(--grid-line)'}`,
     borderLeft: `3px solid ${borderColor}`,
     clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)',
-    padding: expanded ? '0.9rem 1rem 0.75rem' : '0.7rem 0.85rem 0.6rem',
-    marginBottom: '0.7rem',
-    opacity: isDragging ? 0.25 : story.done ? 0.55 : 1,
+    padding: expanded ? 'var(--card-padding)' : 'var(--card-padding)',
+    marginBottom: 'var(--gap-sm)',
+    opacity: dimmed ? 0.28 : isDragging ? 0.25 : story.done ? 0.55 : 1,
     transform: CSS.Transform.toString(transform),
     transition,
     position: 'relative',
+    fontSize: 'var(--font-size-base)',
   }
 
   const stopDrag = (e: React.SyntheticEvent) => e.stopPropagation()
@@ -77,6 +81,20 @@ export const StoryCard: React.FC<StoryCardProps> = ({
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.45rem' }}>
         <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: '0.62rem', letterSpacing: '0.06em', color: 'var(--ink-soft)', display:'flex', alignItems:'center', gap:4 }}>
+          <button
+            onPointerDown={stopDrag}
+            onClick={e => { e.stopPropagation(); onToggleSelect?.() }}
+            title={selected ? 'Deselect (bulk)' : 'Select for bulk'}
+            aria-pressed={!!selected}
+            style={{
+              width: 14, height: 14,
+              border: `1px solid ${selected ? 'var(--amber)' : 'var(--grid-line)'}`,
+              background: selected ? 'var(--amber)' : 'transparent',
+              color: selected ? '#fff' : 'transparent',
+              cursor: 'pointer', fontSize:'0.5rem', display:'flex', alignItems:'center', justifyContent:'center',
+              flexShrink:0,
+            }}
+          >{selected ? '✓' : ''}</button>
           <span style={{ fontSize:'0.55rem', opacity:0.5, cursor:'grab', userSelect:'none' }} title="Drag">⠿</span>
           {story.id}
         </span>

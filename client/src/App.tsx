@@ -1,6 +1,7 @@
 import React from 'react'
 import { BrowserRouter, Routes, Route, Navigate, NavLink, useLocation } from 'react-router-dom'
 import { PlanProvider, usePlan } from '@/context/PlanContext'
+import { ThemeProvider, useTheme } from '@/context/ThemeContext'
 import { LandingPage } from '@/pages/LandingPage'
 import { IntakePage } from '@/pages/IntakePage'
 import { BoardPage } from '@/pages/BoardPage'
@@ -56,6 +57,7 @@ const Rail: React.FC = () => {
 
 const Topbar: React.FC = () => {
   const { plan } = usePlan()
+  const { theme, setTheme, density, setDensity } = useTheme()
   const loc = useLocation()
   const title = plan.project_name || 'Rune'
   const onBoard = loc.pathname === '/board' && !!plan.project_name
@@ -74,7 +76,55 @@ const Topbar: React.FC = () => {
         <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: '0.95rem', color: 'var(--bright)' }}>{onBoard ? title : 'Rune'}</span>
         {onBoard && <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: '0.6rem', letterSpacing: '0.08em', padding: '2px 6px', border: '1px solid var(--grid-line)', color: 'var(--fog)' }}>{plan.methodology.toUpperCase()}</span>}
       </div>
-      <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: '0.6rem', color: 'var(--fog)', letterSpacing: '0.06em' }}>{new Date().toISOString().slice(0,10)}</span>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: '0.6rem', color: 'var(--fog)', letterSpacing: '0.06em' }}>{new Date().toISOString().slice(0,10)}</span>
+        <div style={{ display: 'flex', gap: 4 }} role="group" aria-label="Theme">
+          {(['dark', 'light', 'auto'] as const).map(t => (
+            <button
+              key={t}
+              onClick={() => setTheme(t)}
+              aria-label={t === 'auto' ? 'Auto theme' : t + ' theme'}
+              aria-pressed={theme === t}
+              title={t === 'auto' ? 'Auto (system)' : t.charAt(0).toUpperCase() + t.slice(1)}
+              style={{
+                width: 28, height: 28,
+                border: `1px solid ${theme === t ? 'var(--amber)' : 'var(--grid-line)'}`,
+                background: theme === t ? 'var(--amber)' : 'transparent',
+                color: theme === t ? '#fff' : 'var(--fog)',
+                cursor: 'pointer',
+                fontFamily: "'IBM Plex Mono', monospace", fontSize: '0.55rem',
+                clipPath: 'polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 0 100%)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}
+            >
+              {t === 'dark' && '🌙'}{t === 'light' && '☀️'}{t === 'auto' && '💻'}
+            </button>
+          ))}
+        </div>
+        <div style={{ display: 'flex', gap: 4 }} role="group" aria-label="Density">
+          {(['compact', 'comfortable'] as const).map(d => (
+            <button
+              key={d}
+              onClick={() => setDensity(d)}
+              aria-label={d + ' density'}
+              aria-pressed={density === d}
+              title={d === 'compact' ? 'Compact density' : 'Comfortable density'}
+              style={{
+                width: 28, height: 28,
+                border: `1px solid ${density === d ? 'var(--amber)' : 'var(--grid-line)'}`,
+                background: density === d ? 'var(--amber)' : 'transparent',
+                color: density === d ? '#fff' : 'var(--fog)',
+                cursor: 'pointer',
+                fontFamily: "'IBM Plex Mono', monospace", fontSize: '0.55rem',
+                clipPath: 'polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 0 100%)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}
+            >
+              {d === 'compact' && '⋮⋮'}{d === 'comfortable' && '≡'}
+            </button>
+          ))}
+        </div>
+      </div>
     </div>
   )
 }
@@ -113,9 +163,11 @@ const AppContent: React.FC = () => {
 
 const App: React.FC = () => (
   <BrowserRouter>
-    <PlanProvider>
-      <AppContent />
-    </PlanProvider>
+    <ThemeProvider>
+      <PlanProvider>
+        <AppContent />
+      </PlanProvider>
+    </ThemeProvider>
   </BrowserRouter>
 )
 

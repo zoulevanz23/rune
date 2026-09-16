@@ -18,7 +18,7 @@ const defaultPlan: Plan = {
 }
 
 export const PlanProvider = ({ children }: { children: ReactNode }) => {
-  const [state, dispatch] = useReducer(planReducer, { plan: defaultPlan, previousPlan: null })
+  const [state, dispatch] = useReducer(planReducer, { plan: defaultPlan, previousPlan: null, past: [], future: [] })
 
   return (
     <PlanContext.Provider value={{ state, dispatch, plan: state.plan }}>

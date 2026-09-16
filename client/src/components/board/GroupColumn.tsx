@@ -19,10 +19,13 @@ interface GroupColumnProps {
   onMoveToDone: (fromIndex: number, storyId: string) => void
   onRenameGroup: (groupIndex: number, name: string) => void
   onDeleteGroup: (groupIndex: number) => void
+  selectedIds?: Set<string>
+  onToggleSelect?: (id: string) => void
+  matchesSearch?: (story: Story, epicName?: string) => boolean
 }
 
 export const GroupColumn: React.FC<GroupColumnProps> = ({
-  group, groupIndex, epics, doneColumnIndex, onEditStory, onDeleteStory, onCyclePoints, onToggleDone, onAddStory, onMoveToDone, onRenameGroup, onDeleteGroup,
+  group, groupIndex, epics, doneColumnIndex, onEditStory, onDeleteStory, onCyclePoints, onToggleDone, onAddStory, onMoveToDone, onRenameGroup, onDeleteGroup, selectedIds, onToggleSelect, matchesSearch,
 }) => {
   const [showAddForm, setShowAddForm] = useState(false)
   const [newTitle, setNewTitle] = useState('')
@@ -77,7 +80,7 @@ export const GroupColumn: React.FC<GroupColumnProps> = ({
         transition: colTransition || 'background 0.12s, border-color 0.12s',
       }}
     >
-      <div style={{ padding: '0.9rem 0.9rem 0.7rem', borderBottom: '1px solid var(--grid-line)', background: 'var(--surface-alt)' }}>
+      <div style={{ padding: 'var(--card-padding)', borderBottom: '1px solid var(--grid-line)', background: 'var(--surface-alt)' }}>
         {isKanban ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
             <span {...colAttrs} {...colListeners} title="Drag to reorder column" style={{ cursor:'grab', fontSize:'0.62rem', color:'var(--fog)', padding:'2px 4px', border:'1px solid transparent', userSelect:'none' }}>⋮⋮</span>
@@ -116,19 +119,29 @@ export const GroupColumn: React.FC<GroupColumnProps> = ({
           </div>
         )}
         {group.type === 'sprint' && group.goal && (
-          <div style={{ fontSize: '0.72rem', color: 'var(--fog)', marginTop: '0.45rem', lineHeight: 1.4 }}>{group.goal}</div>
+          <div style={{ fontSize: '0.72rem', color: 'var(--fog)', marginTop: '0.45rem', lineHeight: 1.4 }}>
+            {group.goal}
+            {group.stories.length > 0 && (
+              <span style={{ marginLeft: '0.5rem', fontFamily: "'IBM Plex Mono', monospace", fontSize: '0.6rem',
+                color: donePoints === totalPoints && totalPoints > 0 ? 'var(--sage)' : 'var(--amber)' }}>
+                {Math.round((donePoints / (totalPoints || 1)) * 100)}% goal
+              </span>
+            )}
+          </div>
         )}
       </div>
 
       <SortableContext items={group.stories.map(s => s.id)} strategy={verticalListSortingStrategy}>
-        <div style={{ flex: 1, overflowY: 'auto', maxHeight: '60vh', padding: '0.7rem', background: isOver ? 'rgba(201,138,52,0.06)' : 'var(--surface)', minHeight: 80 }}>
+        <div style={{ flex: 1, overflowY: 'auto', maxHeight: '60vh', padding: 'var(--card-padding)', background: isOver ? 'rgba(201,138,52,0.06)' : 'var(--surface)', minHeight: 80 }}>
           {group.stories.map((story) => {
             const epicIndex = epics.findIndex(e => e.id === story.epic_id)
+            const epicName = epics[epicIndex >= 0 ? epicIndex : 0]?.name
+            const isFilteredOut = matchesSearch ? !matchesSearch(story, epicName) : false
             return (
               <StoryCard
                 key={story.id}
                 story={story}
-                epicName={epics[epicIndex >= 0 ? epicIndex : 0]?.name}
+                epicName={epicName}
                 epicIndex={epicIndex >= 0 ? epicIndex : 0}
                 onEdit={(field, value) => onEditStory(groupIndex, story.id, field, value)}
                 onDelete={() => onDeleteStory(groupIndex, story.id)}
@@ -136,16 +149,22 @@ export const GroupColumn: React.FC<GroupColumnProps> = ({
                 onToggleDone={() => onToggleDone(groupIndex, story.id)}
                 onMoveToDone={doneColumnIndex !== null && !isDoneColumn ? () => onMoveToDone(groupIndex, story.id) : undefined}
                 isDoneColumn={isDoneColumn}
+                selected={!!selectedIds?.has(story.id)}
+                onToggleSelect={onToggleSelect ? () => onToggleSelect(story.id) : undefined}
+                dimmed={isFilteredOut}
               />
             )
           })}
+          {matchesSearch && group.stories.filter(s => matchesSearch(s, epics.find(e=>e.id===s.epic_id)?.name)).length === 0 && group.stories.length > 0 && (
+            <div style={{ fontFamily:"'IBM Plex Mono', monospace", fontSize:'0.58rem', color:'var(--fog)', textAlign:'center', padding:'0.6rem 0' }}>No matches in this column</div>
+          )}
           {group.stories.length === 0 && (
             <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: '0.62rem', color: isOver ? 'var(--amber)' : 'var(--fog)', textAlign: 'center', padding: '1.6rem 0', border: `1px dashed ${isOver ? 'var(--amber)' : 'var(--grid-line)'}`, background: isOver ? 'rgba(201,138,52,0.08)' : 'transparent' }}>{isOver ? 'DROP HERE — ' : ''}{isDoneColumn ? 'DONE — drag here' : 'NO STORIES — drop here'}</div>
           )}
         </div>
       </SortableContext>
 
-      <div style={{ padding: '0.6rem 0.7rem', borderTop: '1px solid var(--grid-line)', background: 'var(--surface-alt)' }}>
+      <div style={{ padding: 'var(--card-padding)', borderTop: '1px solid var(--grid-line)', background: 'var(--surface-alt)' }}>
         {showAddForm ? (
           <div style={{ background: 'var(--paper)', border: '1px solid var(--grid-line)', clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)', padding: '0.6rem' }}>
             <input placeholder="Title *" value={newTitle} onChange={e => setNewTitle(e.target.value)} autoFocus style={{ width: '100%', fontFamily: "'IBM Plex Sans', sans-serif", fontSize: '0.8rem', padding: '0.4rem', border: '1px solid var(--grid-line)', background: '#F4EFE2', color: 'var(--ink)', marginBottom: '0.35rem', outline: 'none' }} />
