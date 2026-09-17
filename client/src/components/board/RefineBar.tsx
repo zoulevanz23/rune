@@ -21,7 +21,7 @@ export const RefineBar: React.FC<{ onRefine: (instruction: string) => void; load
         style={{
           flex: 1, fontFamily: "'IBM Plex Sans', sans-serif", fontSize: '0.82rem',
           padding: '0.55rem 0.7rem',
-          border: '1px solid var(--grid-line)', background: 'var(--paper)', color: 'var(--ink)', outline: 'none',
+          border: '1px solid var(--grid-line)', background: '#F4EFE2', color: 'var(--ink)', outline: 'none',
         }}
         onKeyDown={e => e.key === 'Enter' && handleSubmit()}
       />

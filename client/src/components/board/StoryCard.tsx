@@ -104,7 +104,7 @@ export const StoryCard: React.FC<StoryCardProps> = ({
             onClick={e => { e.stopPropagation(); if (editing) handleSave(); else { setEditTitle(story.title); setEditCriteria(getCrit().join('\n')); setEditing(true) } }}
             title={editing ? 'Save' : 'Edit'}
             style={{
-              background: editing ? 'var(--ink)' : 'var(--paper)',
+              background: editing ? 'var(--ink)' : 'var(--surface)',
               color: editing ? 'var(--paper)' : 'var(--ink)',
               border: '1px solid var(--grid-line)',
               width: 22, height: 22, cursor: 'pointer', fontSize: '0.62rem',
@@ -119,7 +119,7 @@ export const StoryCard: React.FC<StoryCardProps> = ({
             style={{
               width: 22, height: 22,
               background: story.points !== null && story.points !== undefined ? 'var(--ink)' : 'transparent',
-              color: story.points !== null && story.points !== undefined ? 'var(--paper)' : 'var(--fog)',
+              color: story.points !== null && story.points !== undefined ? 'var(--paper)' : 'var(--ink-soft)',
               border: story.points !== null && story.points !== undefined ? 'none' : '1px dashed var(--grid-line)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontSize: '0.58rem', fontFamily: "'IBM Plex Mono', monospace",
@@ -133,7 +133,7 @@ export const StoryCard: React.FC<StoryCardProps> = ({
             onClick={e => { e.stopPropagation(); setExpanded(v=>!v) }}
             title={expanded ? 'Minimize' : 'Expand — bigger view'}
             style={{
-              background: expanded ? 'var(--paper)' : 'var(--amber)',
+              background: expanded ? 'var(--surface)' : 'var(--amber)',
               color: expanded ? 'var(--ink)' : '#fff',
               border: `1px solid ${expanded ? 'var(--grid-line)' : 'var(--amber)'}`,
               width: 26, height: 26, cursor: 'pointer', fontSize: '0.78rem',
@@ -151,7 +151,7 @@ export const StoryCard: React.FC<StoryCardProps> = ({
             onPointerDown={stopDrag}
             onClick={e => { e.stopPropagation(); onDelete() }}
             title="Delete"
-            style={{ background: 'var(--paper)', border: '1px solid var(--grid-line)', width: 22, height: 22, cursor: 'pointer', color: 'var(--coral)', fontSize: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink:0 }}
+            style={{ background: 'var(--surface)', border: '1px solid var(--grid-line)', width: 22, height: 22, cursor: 'pointer', color: 'var(--coral)', fontSize: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink:0 }}
           >×</button>
         </div>
       </div>
@@ -164,7 +164,7 @@ export const StoryCard: React.FC<StoryCardProps> = ({
           <textarea value={editCriteria} onChange={e => setEditCriteria(e.target.value)} placeholder="One criterion per line" style={{ width: '100%', fontFamily: "'IBM Plex Sans', sans-serif", border: '1px solid var(--grid-line)', background: '#F4EFE2', padding: '0.4rem', height: 72, color: 'var(--ink)', fontSize:'0.78rem', outline:'none' }} />
           <div style={{ display:'flex', gap:6, marginTop:6 }}>
             <button onPointerDown={stopDrag} onClick={e=>{e.stopPropagation(); handleSave()}} style={{ flex:1, fontFamily:"'IBM Plex Mono', monospace", fontSize:'0.62rem', padding:'0.4rem', background:'var(--ink)', color:'var(--paper)', border:'none', cursor:'pointer' }}>SAVE</button>
-            <button onPointerDown={stopDrag} onClick={e=>{e.stopPropagation(); setEditing(false)}} style={{ flex:1, fontFamily:"'IBM Plex Mono', monospace", fontSize:'0.62rem', padding:'0.4rem', background:'var(--paper)', border:'1px solid var(--grid-line)', cursor:'pointer', color:'var(--ink)' }}>CANCEL</button>
+            <button onPointerDown={stopDrag} onClick={e=>{e.stopPropagation(); setEditing(false)}} style={{ flex:1, fontFamily:"'IBM Plex Mono', monospace", fontSize:'0.62rem', padding:'0.4rem', background:'var(--surface)', border:'1px solid var(--grid-line)', cursor:'pointer', color:'var(--ink)' }}>CANCEL</button>
           </div>
         </div>
       ) : (

@@ -99,7 +99,7 @@ export const GroupColumn: React.FC<GroupColumnProps> = ({
               }}>WIP {group.wip_limit}</span>
             )}
             <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: '0.62rem', color: 'var(--fog)' }}>{group.stories.length} · {donePoints}/{totalPoints} pts</span>
-            <button onClick={()=>onDeleteGroup(groupIndex)} title="Delete column" style={{ marginLeft:'auto', background:'none', border:'none', color:'var(--coral)', cursor:'pointer', fontSize:'0.7rem', padding:'0 4px', opacity:0.6 }}>×</button>
+            <button onClick={()=>onDeleteGroup(groupIndex)} title="Delete column" style={{ marginLeft:'auto', background:'var(--coral)', border:'none', color:'#fff', cursor:'pointer', fontSize:'0.65rem', fontWeight:600, padding:'2px 6px', borderRadius:'4px', opacity:0.9, transition:'all 0.2s ease' }} onMouseEnter={(e)=>{e.currentTarget.style.opacity='1'; e.currentTarget.style.transform='scale(1.05)'}} onMouseLeave={(e)=>{e.currentTarget.style.opacity='0.9'; e.currentTarget.style.transform='scale(1)'}}>×</button>
           </div>
         ) : (
           <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center' }}>
@@ -113,7 +113,7 @@ export const GroupColumn: React.FC<GroupColumnProps> = ({
               )}
               <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: '0.58rem', color: 'var(--fog)', letterSpacing: '0.06em', display:'flex', gap:6, alignItems:'center' }}>
                 <span>{group.stories.length} STORIES · {donePoints}/{totalPoints} PTS</span>
-                <button onClick={()=>onDeleteGroup(groupIndex)} title="Delete sprint" style={{ background:'none', border:'none', color:'var(--coral)', cursor:'pointer', fontSize:'0.6rem', opacity:0.6 }}>×</button>
+                <button onClick={()=>onDeleteGroup(groupIndex)} title="Delete sprint" style={{ background:'var(--coral)', border:'none', color:'#fff', cursor:'pointer', fontSize:'0.65rem', fontWeight:600, padding:'2px 6px', borderRadius:'4px', opacity:0.9, transition:'all 0.2s ease' }} onMouseEnter={(e)=>{e.currentTarget.style.opacity='1'; e.currentTarget.style.transform='scale(1.05)'}} onMouseLeave={(e)=>{e.currentTarget.style.opacity='0.9'; e.currentTarget.style.transform='scale(1)'}}>×</button>
               </div>
             </div>
           </div>

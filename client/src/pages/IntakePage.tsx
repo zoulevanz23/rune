@@ -48,7 +48,7 @@ export const IntakePage: React.FC<{ apiBaseUrl: string }> = ({ apiBaseUrl }) => 
         </div>
       )}
       {loading && <div style={{ marginTop: '1rem' }}><Spinner /></div>}
-      {toast && <div style={{ position: 'fixed', bottom: '1.5rem', right: '1.5rem', background: 'var(--paper)', color: 'var(--ink)', padding: '0.8rem 1rem', border: '1px solid var(--grid-line)', fontFamily: "'IBM Plex Mono', monospace", fontSize: '0.7rem' }}>{toast}</div>}
+      {toast && <div style={{ position: 'fixed', bottom: '1.5rem', right: '1.5rem', background: 'var(--surface-alt)', color: 'var(--bright)', padding: '0.8rem 1rem', border: '1px solid var(--grid-line)', fontFamily: "'IBM Plex Mono', monospace", fontSize: '0.7rem' }}>{toast}</div>}
     </div>
   )
 }

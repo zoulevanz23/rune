@@ -10,7 +10,7 @@ export const CustomizePanel: React.FC<{
     <div style={{ marginTop: '0.8rem', maxWidth: 640, width: '100%' }}>
       <button onClick={onToggle} style={{
         fontFamily: "'IBM Plex Mono', monospace", fontSize: '0.65rem', letterSpacing: '0.06em',
-        background: 'var(--surface)', border: '1px solid var(--grid-line)', color: 'var(--fog)', cursor: 'pointer',
+        background: 'var(--surface)', border: '1px solid var(--grid-line)', color: 'var(--ink-soft)', cursor: 'pointer',
         padding: '0.35em 0.6em',
       }}>
         {isExpanded ? '▾  HIDE CUSTOMIZE' : '▸  CUSTOMIZE'}

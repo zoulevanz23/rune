@@ -14,7 +14,7 @@ export const Logo: React.FC<{ size?: number; withWordmark?: boolean; mono?: stri
       {withWordmark && (
         <div style={{ display:'flex', flexDirection:'column', lineHeight:1 }}>
           <span style={{ fontFamily:"'Space Grotesk', sans-serif", fontWeight:600, fontSize:'0.95rem', letterSpacing:'0.01em', color: variant==='dark' ? 'var(--ink)' : 'var(--bright)' }}>Rune</span>
-          {mono && <span style={{ fontFamily:"'IBM Plex Mono', monospace", fontSize:'0.52rem', letterSpacing:'0.1em', color: variant==='dark' ? 'var(--ink-soft)' : 'var(--fog)' }}>{mono}</span>}
+          {mono && <span style={{ fontFamily:"'IBM Plex Mono', monospace", fontSize:'0.52rem', letterSpacing:'0.1em', color: variant==='dark' ? 'var(--ink-soft)' : 'var(--ink-soft)' }}>{mono}</span>}
         </div>
       )}
     </div>
