@@ -45,10 +45,10 @@ const Rail: React.FC = () => {
       <div style={{ height: 52, borderBottom: '1px solid var(--grid-line)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <img src={logoSrc} alt="Rune" width={36} height={36} style={{ width:36, height:36, objectFit:'contain', display:'block' }} />
       </div>
-      <NavLink to="/" style={({ isActive }) => linkStyle(isActive)}>{icon("M3 3h12v12H3z")} <span>Home</span></NavLink>
-      <NavLink to="/new" style={({ isActive }) => linkStyle(isActive)}>{icon("M3 5h12M3 9h12M3 13h8")} <span>New</span></NavLink>
+      <NavLink to="/" style={({ isActive }) => linkStyle(isActive)}>{icon("M3 9l3-3 4 4 5-5 M3 14h12")} <span>Home</span></NavLink>
+      <NavLink to="/new" style={({ isActive }) => linkStyle(isActive)}>{icon("M9 3v12M3 9h12")} <span>New</span></NavLink>
       <NavLink to="/my-plans" style={({ isActive }) => linkStyle(isActive)}>{icon("M4 3h10v12H4z M6 6h6M6 9h6M6 12h4")} <span>Plans</span></NavLink>
-      <NavLink to="/board" style={({ isActive }) => linkStyle(isActive)}>{icon("M3 4h5v5H3z M10 4h5v5H10z M3 11h5v5H3z M10 11h5v5H10z")} <span>Board</span></NavLink>
+      <NavLink to="/board" style={({ isActive }) => linkStyle(isActive)}>{icon("M3 3h5v5H3z M10 3h5v5H10z M3 10h5v5H3z M10 10h5v5H10z")} <span>Board</span></NavLink>
       <div style={{ flex: 1 }} />
       <div style={{ padding: '12px', fontFamily: "'IBM Plex Mono', monospace", fontSize: '0.5rem', color: 'var(--fog)', textAlign: 'center', lineHeight: 1.4 }}>REV<br/>02</div>
     </nav>
@@ -57,7 +57,7 @@ const Rail: React.FC = () => {
 
 const Topbar: React.FC = () => {
   const { plan } = usePlan()
-  const { theme, setTheme, density, setDensity } = useTheme()
+  const { theme, setTheme } = useTheme()
   const loc = useLocation()
   const title = plan.project_name || 'Rune'
   const onBoard = loc.pathname === '/board' && !!plan.project_name
@@ -78,51 +78,50 @@ const Topbar: React.FC = () => {
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
         <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: '0.6rem', color: 'var(--fog)', letterSpacing: '0.06em' }}>{new Date().toISOString().slice(0,10)}</span>
-        <div style={{ display: 'flex', gap: 4 }} role="group" aria-label="Theme">
-          {(['dark', 'light', 'auto'] as const).map(t => (
-            <button
-              key={t}
-              onClick={() => setTheme(t)}
-              aria-label={t === 'auto' ? 'Auto theme' : t + ' theme'}
-              aria-pressed={theme === t}
-              title={t === 'auto' ? 'Auto (system)' : t.charAt(0).toUpperCase() + t.slice(1)}
-              style={{
-                width: 28, height: 28,
-                border: `1px solid ${theme === t ? 'var(--amber)' : 'var(--grid-line)'}`,
-                background: theme === t ? 'var(--amber)' : 'transparent',
-                color: theme === t ? '#fff' : 'var(--fog)',
-                cursor: 'pointer',
-                fontFamily: "'IBM Plex Mono', monospace", fontSize: '0.55rem',
-                clipPath: 'polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 0 100%)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}
-            >
-              {t === 'dark' && '🌙'}{t === 'light' && '☀️'}{t === 'auto' && '💻'}
-            </button>
-          ))}
-        </div>
-        <div style={{ display: 'flex', gap: 4 }} role="group" aria-label="Density">
-          {(['compact', 'comfortable'] as const).map(d => (
-            <button
-              key={d}
-              onClick={() => setDensity(d)}
-              aria-label={d + ' density'}
-              aria-pressed={density === d}
-              title={d === 'compact' ? 'Compact density' : 'Comfortable density'}
-              style={{
-                width: 28, height: 28,
-                border: `1px solid ${density === d ? 'var(--amber)' : 'var(--grid-line)'}`,
-                background: density === d ? 'var(--amber)' : 'transparent',
-                color: density === d ? '#fff' : 'var(--fog)',
-                cursor: 'pointer',
-                fontFamily: "'IBM Plex Mono', monospace", fontSize: '0.55rem',
-                clipPath: 'polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 0 100%)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}
-            >
-              {d === 'compact' && '⋮⋮'}{d === 'comfortable' && '≡'}
-            </button>
-          ))}
+        <div style={{ display: 'flex', gap: 8 }} role="group" aria-label="Theme">
+          {(['dark', 'light'] as const).map(t => {
+            const active = theme === t
+            return (
+              <button
+                key={t}
+                onClick={() => setTheme(t)}
+                aria-label={t + ' theme'}
+                aria-pressed={active}
+                title={t.charAt(0).toUpperCase() + t.slice(1)}
+                style={{
+                  width: 40, height: 40,
+                  border: active ? '2px solid var(--amber)' : '1px solid var(--grid-line)',
+                  background: active ? 'var(--surface)' : 'transparent',
+                  borderRadius: '12px',
+                  cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  transition: 'all 0.2s ease',
+                  position: 'relative',
+                  overflow: 'hidden',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = active ? 'var(--amber)' : 'var(--bright)'
+                  e.currentTarget.style.transform = 'scale(1.05)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = active ? 'var(--amber)' : 'var(--grid-line)'
+                  e.currentTarget.style.transform = 'scale(1)'
+                }}
+              >
+                {t === 'dark' && (
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke={active ? 'var(--amber)' : 'var(--fog)'} strokeWidth="2">
+                    <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
+                  </svg>
+                )}
+                {t === 'light' && (
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke={active ? 'var(--amber)' : 'var(--fog)'} strokeWidth="2">
+                    <circle cx="10" cy="10" r="4" />
+                    <path d="M10 2v2M10 16v2M3.22 3.22l1.42 1.42M15.36 15.36l1.42 1.42M2 10h2M16 10h2M3.22 16.78l1.42-1.42M15.36 4.64l1.42-1.42" />
+                  </svg>
+                )}
+              </button>
+            )
+          })}
         </div>
       </div>
     </div>
