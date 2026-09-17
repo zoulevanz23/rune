@@ -9,6 +9,7 @@ import { EpicLegend } from '@/components/board/EpicLegend'
 import { TimelineStrip } from '@/components/board/TimelineStrip'
 import { RefineBar } from '@/components/board/RefineBar'
 import { ShortcutsModal } from '@/components/board/ShortcutsModal'
+import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 import { toMarkdown, downloadCsv, exportToPdf } from '@/lib/export'
 import { Button } from '@/components/shared/Button'
 import { Story } from '@/types/plan'
@@ -25,6 +26,7 @@ export const BoardPage: React.FC<{ apiBaseUrl: string }> = ({ apiBaseUrl }) => {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [bulkTarget, setBulkTarget] = useState('')
+  const [deleteDialog, setDeleteDialog] = useState<{ isOpen: boolean; groupIndex: number; groupName: string }>({ isOpen: false, groupIndex: -1, groupName: '' })
 
   const doneColumnIndex = plan.groups.findIndex(g => g.type === 'column' && (g as any).name === 'Done')
   const isGroupDrag = !!activeId?.startsWith('group-')
@@ -91,11 +93,23 @@ export const BoardPage: React.FC<{ apiBaseUrl: string }> = ({ apiBaseUrl }) => {
   const handleDeleteGroup = useCallback((idx: number) => {
     if (plan.groups.length <= 1) { setToast('Need at least one group'); setTimeout(()=>setToast(null),2000); return }
     const g: any = plan.groups[idx]
-    if (!confirm(`Delete "${g.name}"? Stories inside will be lost.`)) return
-    dispatch({ type: 'DELETE_GROUP', payload: { groupIndex: idx } })
-    setToast('Group deleted')
-    setTimeout(()=>setToast(null),2000)
-  }, [plan.groups, dispatch])
+    setDeleteDialog({ isOpen: true, groupIndex: idx, groupName: g.name })
+  }, [plan.groups])
+
+  const confirmDeleteGroup = useCallback(() => {
+    setDeleteDialog(prev => {
+      if (prev.groupIndex >= 0) {
+        dispatch({ type: 'DELETE_GROUP', payload: { groupIndex: prev.groupIndex } })
+        setToast('Group deleted')
+        setTimeout(()=>setToast(null),2000)
+      }
+      return { isOpen: false, groupIndex: -1, groupName: '' }
+    })
+  }, [dispatch])
+
+  const cancelDeleteGroup = useCallback(() => {
+    setDeleteDialog({ isOpen: false, groupIndex: -1, groupName: '' })
+  }, [])
   const handleRefine = useCallback(async (instruction: string) => {
     const updated = await refine(plan, instruction)
     if (updated) { dispatch({ type: 'SET_PLAN', payload: updated }); save(updated).catch(() => setToast('Auto-save failed')) }
@@ -305,7 +319,7 @@ export const BoardPage: React.FC<{ apiBaseUrl: string }> = ({ apiBaseUrl }) => {
       <div style={{ background:'var(--paper)', border:'1px solid var(--grid-line)', clipPath:'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)', padding:'0.75rem 0.9rem' }}>
         <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:12, flexWrap:'wrap', marginBottom:6 }}>
           <div style={{ fontFamily:"'IBM Plex Mono', monospace", fontSize:'0.58rem', letterSpacing:'0.08em', color:'var(--ink-soft)' }}>REFINE — CONVERSATIONAL ITERATION</div>
-          <div style={{ fontFamily:"'IBM Plex Mono', monospace", fontSize:'0.58rem', color:'var(--fog)' }}>Use-case: tweak without regenerating</div>
+          <div style={{ fontFamily:"'IBM Plex Mono', monospace", fontSize:'0.58rem', color:'var(--ink-soft)' }}>Use-case: tweak without regenerating</div>
         </div>
         <div style={{ fontSize:'0.72rem', color:'var(--ink-soft)', lineHeight:1.45, marginBottom:8 }}>
           Describe changes in plain language — the board updates live. Try <span style={{ color:'var(--ink)', fontFamily:"'IBM Plex Mono', monospace", fontSize:'0.68rem' }}>'make sprint 2 focus on onboarding'</span> · <span style={{ color:'var(--ink)', fontFamily:"'IBM Plex Mono', monospace", fontSize:'0.68rem' }}>'split epic E2'</span> · <span style={{ color:'var(--ink)', fontFamily:"'IBM Plex Mono', monospace", fontSize:'0.68rem' }}>'move US-101 to Done'</span> · then <span style={{ color:'var(--ink)', fontFamily:"'IBM Plex Mono', monospace", fontSize:'0.68rem' }}>Undo</span> to revert.
@@ -317,7 +331,7 @@ export const BoardPage: React.FC<{ apiBaseUrl: string }> = ({ apiBaseUrl }) => {
       {/* search + bulk toolbar */}
       <div style={{ display:'flex', gap: '0.5rem', flexWrap:'wrap', alignItems:'center', background:'var(--surface)', border:'1px solid var(--grid-line)', clipPath:'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)', padding:'0.6rem 0.7rem' }}>
         <div style={{ flex:'1 1 220px', display:'flex', alignItems:'center', gap:6, background:'var(--paper)', border:'1px solid var(--grid-line)', padding:'0.35rem 0.5rem' }}>
-          <span style={{ fontFamily:"'IBM Plex Mono', monospace", fontSize:'0.6rem', color:'var(--fog)' }}>⌕</span>
+          <span style={{ fontFamily:"'IBM Plex Mono', monospace", fontSize:'0.6rem', color:'var(--ink-soft)' }}>⌕</span>
           <input id="board-search" value={searchQuery} onChange={e=>setSearchQuery(e.target.value)} placeholder="Search — title, ID, epic, priority …  (/ or Cmd+K)" style={{ flex:1, border:'none', outline:'none', background:'transparent', fontFamily:"'IBM Plex Sans', sans-serif", fontSize:'0.78rem', color:'var(--ink)' }} />
           {searchQuery && <button onClick={()=>setSearchQuery('')} style={{ fontSize:'0.6rem', background:'var(--ink)', color:'var(--paper)', border:'none', cursor:'pointer', padding:'2px 5px', fontFamily:"'IBM Plex Mono', monospace" }}>✕</button>}
         </div>
@@ -395,8 +409,18 @@ export const BoardPage: React.FC<{ apiBaseUrl: string }> = ({ apiBaseUrl }) => {
         </DragOverlay>
       </DndContext>
 
-      {toast && <div style={{ position: 'fixed', bottom: '1.2rem', right: '1.2rem', background: 'var(--paper)', color: 'var(--ink)', padding: '0.6rem 0.9rem', border: '1px solid var(--grid-line)', fontFamily: "'IBM Plex Mono', monospace", fontSize: '0.65rem', zIndex: 1000 }}>{toast}</div>}
+      {toast && <div style={{ position: 'fixed', bottom: '1.2rem', right: '1.2rem', background: 'var(--surface-alt)', color: 'var(--bright)', padding: '0.6rem 0.9rem', border: '1px solid var(--grid-line)', fontFamily: "'IBM Plex Mono', monospace", fontSize: '0.65rem', zIndex: 1000 }}>{toast}</div>}
       <ShortcutsModal isOpen={showShortcuts} onClose={() => setShowShortcuts(false)} />
+      <ConfirmDialog
+        isOpen={deleteDialog.isOpen}
+        title={`Delete "${deleteDialog.groupName}"?`}
+        message="Stories inside will be lost. This action cannot be undone."
+        confirmText="Delete Sprint"
+        cancelText="Cancel"
+        onConfirm={confirmDeleteGroup}
+        onCancel={cancelDeleteGroup}
+        danger={true}
+      />
     </div>
   )
 }
