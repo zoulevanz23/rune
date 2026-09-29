@@ -1,6 +1,6 @@
 import React from 'react'
 
-export type ChipVariant = 'neutral' | 'primary' | 'success' | 'warning' | 'danger' | 'outline' | 'default' | 'amber' | 'coral' | 'green'
+export type ChipVariant = 'neutral' | 'primary' | 'success' | 'warning' | 'danger' | 'outline' | 'default'
 export type ChipSize = 'xs' | 'sm' | 'md' | 'lg'
 
 export interface ChipProps extends React.HTMLAttributes<HTMLSpanElement> {
@@ -25,15 +25,12 @@ export const Chip: React.FC<ChipProps> = ({
   const getVariantStyles = (v: ChipVariant): React.CSSProperties => {
     switch (v) {
       case 'primary':
-      case 'amber':
         return { background: 'var(--primary-soft)', color: 'var(--primary-text)', border: '1px solid transparent' }
       case 'success':
-      case 'green':
         return { background: 'var(--success-soft)', color: 'var(--success-text)', border: '1px solid transparent' }
       case 'warning':
         return { background: 'var(--warning-soft)', color: 'var(--warning-text)', border: '1px solid transparent' }
       case 'danger':
-      case 'coral':
         return { background: 'var(--danger-soft)', color: 'var(--danger-text)', border: '1px solid transparent' }
       case 'outline':
         return { background: 'transparent', color: 'var(--ink)', border: '1px solid var(--border)' }

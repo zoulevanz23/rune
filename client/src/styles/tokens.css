@@ -100,32 +100,7 @@
   /* ---- Density toggle values ---- */
   --card-padding: 12px;
   --card-font-size: 14px;
-
-  /* ---- Temporary Legacy Aliases ---- */
-  --canvas: var(--bg);
-  --surface-alt: var(--surface-2);
-  --grid-line: var(--border);
-  --blue-grid: var(--border);
-  --blue-grid-faint: rgba(29, 78, 137, 0.08);
-  --paper: var(--surface);
-  --paper-shadow: var(--shadow-1);
-  --bright: var(--ink);
-  --fog: var(--muted);
-  --amber: var(--primary);
-  --coral: var(--danger);
-  --green: var(--success);
-  --teal: var(--primary-text);
-  --violet: var(--primary);
-  --sage: var(--muted);
-  --blue-deep: var(--bg);
-  --blue-mid: var(--surface-2);
-  --sky: var(--ink);
-  --sky-dim: var(--muted);
-  --chamfer: 0px;
   --row-height: 44px;
-  --font-size-sm: 13px;
-  --font-size-base: 14px;
-  --gap-sm: 8px;
 }
 
 [data-theme='dark'] {
@@ -180,8 +155,6 @@
   --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
   --shadow-2: 0 8px 24px rgba(0, 0, 0, 0.55);
   --overlay: rgba(0, 0, 0, 0.6);
-
-  --blue-grid-faint: rgba(47, 111, 191, 0.12);
 }
 
 [data-density='compact'] {

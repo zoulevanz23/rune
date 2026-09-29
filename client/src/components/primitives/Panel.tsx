@@ -1,15 +1,11 @@
 import React from 'react'
 
-export type PanelVariant = 'surface' | 'surface-2' | 'bg' | 'paper' | 'surface-alt' | 'canvas'
+export type PanelVariant = 'surface' | 'surface-2' | 'bg'
 
 export interface PanelProps extends React.HTMLAttributes<HTMLDivElement> {
   variant?: PanelVariant
-  /** @deprecated No longer used. Kept for backwards compatibility. */
-  chamfered?: boolean
   bordered?: boolean
   padded?: boolean
-  /** @deprecated No longer rendered. Kept for backwards compatibility. */
-  tag?: string
   radius?: 'sm' | 'md' | 'lg' | 'xl' | 'none'
 }
 
@@ -17,10 +13,6 @@ const variantBg: Record<PanelVariant, string> = {
   surface: 'var(--surface)',
   'surface-2': 'var(--surface-2)',
   bg: 'var(--bg)',
-  // Legacy aliases
-  paper: 'var(--surface)',
-  'surface-alt': 'var(--surface-2)',
-  canvas: 'var(--bg)',
 }
 
 const radiusMap: Record<string, string> = {
@@ -33,10 +25,8 @@ const radiusMap: Record<string, string> = {
 
 export const Panel: React.FC<PanelProps> = ({
   variant = 'surface',
-  chamfered,
   bordered = true,
   padded = true,
-  tag,
   radius = 'lg',
   children,
   style,
