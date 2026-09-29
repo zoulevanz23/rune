@@ -1,4 +1,4 @@
-@import './tokens.css';
+﻿@import './tokens.css';
 
 /* ---- Inter (self-hosted, 400/500/600/700) ---- */
 @font-face {
@@ -214,5 +214,38 @@ textarea {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+}
+
+/* ---- app shell layout ---- */
+.app-shell {
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.app-sidebar {
+  display: flex;
+}
+
+.app-tabbar {
+  display: none;
+}
+
+.app-nav-item:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
+}
+
+@media (max-width: 759px) {
+  .app-sidebar {
+    display: none !important;
+  }
+  .app-tabbar {
+    display: flex !important;
+  }
+  .app-shell {
+    padding: 12px;
+    padding-bottom: 84px;
   }
 }

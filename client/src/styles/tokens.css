@@ -1,4 +1,4 @@
-﻿/* Rune design tokens — "Modern Corporate"
+/* Rune design tokens — "Modern Corporate"
    Light is the default theme. Dark is applied via [data-theme="dark"]. */
 
 :root {
@@ -9,6 +9,7 @@
   --nav-2: #13315C;
   --nav-text: #C9D4E5;
   --nav-muted: #7F93B2;
+  --nav-active: rgba(255, 255, 255, 0.14);
 
   /* ---- Surfaces & Borders ---- */
   --bg: #F3F5F8;
@@ -133,6 +134,7 @@
   --nav-2: #111C30;
   --nav-text: #B7C4DA;
   --nav-muted: #6E82A3;
+  --nav-active: rgba(255, 255, 255, 0.14);
 
   /* ---- Surfaces & Borders ---- */
   --bg: #0B1220;

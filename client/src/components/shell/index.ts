@@ -1,3 +1,4 @@
-export { Rail } from './Rail'
-export { Topbar } from './Topbar'
 export { Shell } from './Shell'
+export { Sidebar } from './Sidebar'
+export { Topbar } from './Topbar'
+export { CommandPalette } from './CommandPalette'

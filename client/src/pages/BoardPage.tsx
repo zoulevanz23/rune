@@ -11,6 +11,7 @@ import { RefineBar } from '@/components/board/RefineBar'
 import { ShortcutsModal } from '@/components/board/ShortcutsModal'
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 import { toMarkdown, downloadCsv, exportToPdf } from '@/lib/export'
+import { BoardActionsProvider } from '@/context/BoardActionsContext'
 import { Button } from '@/components/shared/Button'
 import { Story } from '@/types/plan'
 
@@ -298,7 +299,12 @@ export const BoardPage: React.FC<{ apiBaseUrl: string }> = ({ apiBaseUrl }) => {
   const allStoryIds = plan.groups.flatMap(g => g.stories.map(s=>s.id))
 
   const displayName = (plan.project_name || 'Untitled Plan').replace(/\*\*/g, '').trim()
+  const boardActions = {
+    canUndo, canRedo, undo: handleUndo, redo: handleRedo, save: handleSave,
+    exportMarkdown: handleExportMarkdown, exportCsv: handleExportCsv, exportPdf: handleExportPdf,
+  }
   return (
+    <BoardActionsProvider value={boardActions}>
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.6rem', borderBottom: '1px solid var(--grid-line)', paddingBottom: '0.8rem' }}>
         <div style={{ flex: '1 1 280px', minWidth: 0 }}>
@@ -422,5 +428,6 @@ export const BoardPage: React.FC<{ apiBaseUrl: string }> = ({ apiBaseUrl }) => {
         danger={true}
       />
     </div>
+    </BoardActionsProvider>
   )
 }
