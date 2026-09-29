@@ -7,7 +7,7 @@ export interface DialogProps {
   onClose: () => void
   title: string
   description?: string
-  children: React.ReactNode
+  children?: React.ReactNode
   size?: DialogSize
   showClose?: boolean
   footer?: React.ReactNode

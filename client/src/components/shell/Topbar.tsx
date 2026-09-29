@@ -46,7 +46,19 @@ export const Topbar: React.FC<TopbarProps> = ({ onOpenSearch }) => {
           {label}
         </Link>
       ) : (
-        <span style={{ color: 'var(--ink)', fontSize: 14, fontWeight: isLast ? 600 : 500 }}>{label}</span>
+        <span
+          style={{
+            color: 'var(--ink)',
+            fontSize: 14,
+            fontWeight: isLast ? 600 : 500,
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            maxWidth: isLast ? 260 : 180,
+          }}
+        >
+          {label}
+        </span>
       )}
       {!isLast && <ChevronRight size={14} strokeWidth={1.7} style={{ color: 'var(--ink-mute)', flexShrink: 0 }} />}
     </React.Fragment>
