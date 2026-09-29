@@ -74,6 +74,8 @@ const pairs = [
   ['--primary-text', '--bg', 4.5],
   ['--primary-text', '--surface-2', 4.5],
   ['--on-primary', '--primary', 4.5],
+  ['--on-danger', '--danger', 4.5],
+  ['--on-danger', '--danger-hover', 4.5],
   ['--success-text', '--success-soft', 4.5],
   ['--warning-text', '--warning-soft', 4.5],
   ['--danger-text', '--danger-soft', 4.5],

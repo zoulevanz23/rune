@@ -85,7 +85,7 @@ export const StyleguidePage: React.FC = () => {
       <Section title="Form controls">
         <Input placeholder="Text input" size="sm" style={{ maxWidth: 220 }} />
         <Input placeholder="With error" error="Required" size="sm" style={{ maxWidth: 220 }} />
-        <Select size="sm" options={[{ value: 'a', label: 'Option A' }, { value: 'b', label: 'Option B' }]} style={{ maxWidth: 180 }} />
+        <Select size="sm" aria-label="Example select" options={[{ value: 'a', label: 'Option A' }, { value: 'b', label: 'Option B' }]} style={{ maxWidth: 180 }} />
         <Textarea placeholder="Textarea" rows={2} style={{ maxWidth: 260 }} />
         <Checkbox label="Checkbox" checked={checked} onChange={e => setChecked(e.target.checked)} />
         <Switch label="Switch" checked={on} onChange={e => setOn(e.target.checked)} />

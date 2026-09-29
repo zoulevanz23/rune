@@ -503,6 +503,7 @@ export const BoardPage: React.FC<{ apiBaseUrl: string }> = ({ apiBaseUrl }) => {
                 {dirty ? 'Unsaved changes' : 'Saved'}
               </Readout>
             </div>
+            <h1 style={{ margin: 0 }}>
             <input
               value={nameDraft}
               onChange={e => setNameDraft(e.target.value)}
@@ -535,6 +536,7 @@ export const BoardPage: React.FC<{ apiBaseUrl: string }> = ({ apiBaseUrl }) => {
                 e.currentTarget.style.borderColor = 'transparent'
               }}
             />
+            </h1>
           </div>
           <Menu
             label="Plan actions"

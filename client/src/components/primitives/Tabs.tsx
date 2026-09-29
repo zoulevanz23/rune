@@ -27,8 +27,10 @@ export const Tabs: React.FC<TabsProps> = ({
 
   if (effectiveVariant === 'segmented') {
     return (
-      <div style={{
-        display: 'inline-flex',
+      <div
+        role="tablist"
+        style={{
+          display: 'inline-flex',
         background: 'var(--surface-2)',
         borderRadius: 'var(--radius-md)',
         padding: '3px',

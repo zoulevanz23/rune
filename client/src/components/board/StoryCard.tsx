@@ -71,7 +71,7 @@ export const StoryCard: React.FC<StoryCardProps> = ({
   }
 
   return (
-    <div ref={setNodeRef} style={style} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)} {...(!editing ? listeners : {})} {...attributes}>
+    <div ref={setNodeRef} style={style} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)} {...(!editing ? listeners : {})} {...attributes} role="group">
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
         <span onPointerDown={stopDrag} style={{ display: 'inline-flex' }}>
           <Checkbox

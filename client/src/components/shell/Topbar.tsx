@@ -88,7 +88,6 @@ export const Topbar: React.FC<TopbarProps> = ({ onOpenSearch }) => {
 
       <button
         onClick={onOpenSearch}
-        aria-label="Open search"
         style={{
           display: 'inline-flex',
           alignItems: 'center',

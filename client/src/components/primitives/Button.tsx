@@ -43,7 +43,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         case 'danger':
           return {
             background: 'var(--danger)',
-            color: '#FFFFFF',
+            color: 'var(--on-danger)',
             border: '1px solid transparent',
           }
       }
@@ -82,7 +82,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
               e.currentTarget.style.borderColor = 'var(--border-strong)'
             }
             else if (variant === 'ghost') e.currentTarget.style.background = 'var(--surface-2)'
-            else if (variant === 'danger') e.currentTarget.style.background = 'var(--danger-text)'
+            else if (variant === 'danger') e.currentTarget.style.background = 'var(--danger-hover)'
           }
         }}
         onMouseLeave={(e) => {

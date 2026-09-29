@@ -61,7 +61,10 @@ export const IconButton = React.forwardRef<HTMLButtonElement, IconButtonProps>(
               e.currentTarget.style.borderColor = 'var(--border-strong)'
             }
             else if (variant === 'primary') e.currentTarget.style.background = 'var(--primary-hover)'
-            else if (variant === 'danger') e.currentTarget.style.background = 'var(--danger)'
+            else if (variant === 'danger') {
+              e.currentTarget.style.background = 'var(--danger)'
+              e.currentTarget.style.color = 'var(--on-danger)'
+            }
           }
         }}
         onMouseLeave={(e) => {
