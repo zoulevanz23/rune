@@ -1,60 +1,60 @@
 import React from 'react'
+import { CalendarRange, Columns3 } from 'lucide-react'
 
-interface Props {
+const options = [
+  { id: 'scrum', label: 'Scrum', desc: 'Sprints with goals and velocity', icon: <CalendarRange size={16} strokeWidth={1.75} /> },
+  { id: 'kanban', label: 'Kanban', desc: 'Continuous flow with WIP limits', icon: <Columns3 size={16} strokeWidth={1.75} /> },
+]
+
+export const MethodologyToggle: React.FC<{
   value: string
   onChange: (v: string) => void
-}
-
-export const MethodologyToggle: React.FC<Props> = ({ value, onChange }) => {
+}> = ({ value, onChange }) => {
   return (
-    <div style={{
-      display: 'inline-flex',
-      background: 'var(--surface-alt)',
-      borderRadius: '8px',
-      padding: '4px',
-      gap: '4px',
-      border: '1px solid var(--grid-line)',
-      position: 'relative',
-    }}>
-      {(['scrum', 'kanban'] as const).map(opt => {
-        const active = value === opt
+    <div role="radiogroup" aria-label="Methodology" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 12, maxWidth: 520 }}>
+      {options.map(opt => {
+        const active = value === opt.id
         return (
           <button
-            key={opt}
-            onClick={() => onChange(opt)}
+            key={opt.id}
+            type="button"
+            role="radio"
+            aria-checked={active}
+            onClick={() => onChange(opt.id)}
             style={{
-              position: 'relative',
-              minWidth: '100px',
-              padding: '10px 20px',
-              fontFamily: "'IBM Plex Sans', sans-serif",
-              fontSize: '0.85rem',
-              fontWeight: 500,
-              letterSpacing: '0.05em',
-              textTransform: 'uppercase',
-              border: 'none',
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: 10,
+              textAlign: 'left',
+              padding: '12px 14px',
+              borderRadius: 'var(--radius-md)',
               cursor: 'pointer',
-              background: active ? 'var(--surface-alt)' : 'transparent',
-              color: active ? 'var(--bright)' : 'var(--fog)',
-              borderRadius: '6px',
-              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-              boxShadow: active ? '0 2px 8px rgba(0, 0, 0, 0.15)' : 'none',
-              transform: active ? 'translateY(-1px)' : 'translateY(0)',
-              outline: 'none',
+              fontFamily: 'var(--font-sans)',
+              fontSize: 14,
+              background: active ? 'var(--primary-soft)' : 'var(--surface)',
+              border: active ? '1px solid var(--primary)' : '1px solid var(--border)',
+              color: active ? 'var(--primary-text)' : 'var(--ink)',
+              boxShadow: active ? 'var(--shadow-1)' : 'none',
+              transition: 'border-color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease)',
             }}
-            onMouseEnter={(e) => {
+            onMouseEnter={e => {
               if (!active) {
-                e.currentTarget.style.background = 'var(--surface)'
-                e.currentTarget.style.color = 'var(--ink-soft)'
+                e.currentTarget.style.borderColor = 'var(--border-strong)'
+                e.currentTarget.style.boxShadow = 'var(--shadow-1)'
               }
             }}
-            onMouseLeave={(e) => {
+            onMouseLeave={e => {
               if (!active) {
-                e.currentTarget.style.background = 'transparent'
-                e.currentTarget.style.color = 'var(--fog)'
+                e.currentTarget.style.borderColor = 'var(--border)'
+                e.currentTarget.style.boxShadow = 'none'
               }
             }}
           >
-            {opt}
+            <span style={{ display: 'inline-flex', marginTop: 2, flexShrink: 0 }} aria-hidden="true">{opt.icon}</span>
+            <span>
+              <span style={{ display: 'block', fontWeight: 600, fontSize: 14, lineHeight: 1.3 }}>{opt.label}</span>
+              <span style={{ display: 'block', fontSize: 12, color: 'var(--muted)', marginTop: 2, lineHeight: 1.4 }}>{opt.desc}</span>
+            </span>
           </button>
         )
       })}

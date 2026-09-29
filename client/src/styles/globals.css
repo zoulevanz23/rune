@@ -206,6 +206,12 @@ textarea {
   top: var(--space-3);
 }
 
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -248,5 +254,31 @@ textarea {
   .app-shell {
     padding: 12px;
     padding-bottom: 84px;
+  }
+}
+
+/* ---- intake ---- */
+.intake-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: var(--space-5);
+  align-items: start;
+}
+
+.intake-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+@media (max-width: 920px) {
+  .intake-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .intake-fields {
+    grid-template-columns: minmax(0, 1fr);
   }
 }

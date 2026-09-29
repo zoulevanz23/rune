@@ -1,36 +1,20 @@
-import React, { useState } from 'react'
-import { Panel } from '@/components/primitives'
-import { Button } from '@/components/primitives'
-import { Readout } from '@/components/primitives'
-import { Chip } from '@/components/primitives'
-import { Input } from '@/components/primitives'
-import { Textarea } from '@/components/primitives'
-import { Select } from '@/components/primitives'
-import { Tabs } from '@/components/primitives'
-
-const methodTabs = [
-  { id: 'scrum', label: 'Scrum', icon: (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <rect x="1" y="1" width="6" height="6" rx="0" />
-      <rect x="9" y="1" width="6" height="6" rx="0" />
-      <rect x="1" y="9" width="6" height="6" rx="0" />
-      <rect x="9" y="9" width="6" height="6" rx="0" />
-    </svg>
-  ) },
-  { id: 'kanban', label: 'Kanban', icon: (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <rect x="1" y="1" width="4" height="14" rx="0" />
-      <rect x="6" y="1" width="4" height="14" rx="0" />
-      <rect x="11" y="1" width="4" height="14" rx="0" />
-    </svg>
-  ) },
-]
+import React from 'react'
+import { Panel, Button, Textarea } from '@/components/primitives'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { MethodologyToggle } from './MethodologyToggle'
+import { CustomizePanel } from './CustomizePanel'
 
 const examplePrompts = [
-  { label: 'Freelancer invoicing app', desc: 'Time tracking, invoices, payments' },
-  { label: 'Marketplace MVP', desc: 'Buyers, sellers, listings, checkout' },
-  { label: 'Internal HR tool', desc: 'Onboarding, reviews, time off' },
-  { label: 'SaaS dashboard', desc: 'Auth, teams, billing, analytics' },
+  { label: 'Freelancer invoicing app', text: 'A freelancing tool for tracking time against clients, sending branded invoices, recording payments and chasing unpaid work.' },
+  { label: 'Marketplace MVP', text: 'A marketplace where buyers browse listings, message sellers and check out securely, with ratings after every purchase.' },
+  { label: 'Internal HR tool', text: 'An HR workspace for onboarding new hires, running review cycles and approving time off.' },
+  { label: 'SaaS dashboard', text: 'A B2B SaaS product with email login, team workspaces, subscription billing and usage analytics.' },
+]
+
+const steps = [
+  { n: 1, label: 'Describe', title: 'Describe your app', desc: 'Paste a rough idea or a full spec — the more detail you give, the sharper the plan.' },
+  { n: 2, label: 'Method', title: 'Choose a methodology', desc: 'Both options build the same board: Scrum adds sprints, Kanban adds WIP limits.' },
+  { n: 3, label: 'Configure', title: 'Configure your plan', desc: 'Sensible defaults for now — you can change any of this later on the board.' },
 ]
 
 export const IntakeSheet: React.FC<{
@@ -59,171 +43,153 @@ export const IntakeSheet: React.FC<{
   sprintCount, sprintLength, scopeMode, teamVelocity, numColumns,
   onSprintCountChange, onSprintLengthChange, onScopeModeChange, onTeamVelocityChange, onNumColumnsChange,
 }) => {
-  const [customExpanded, setCustomExpanded] = useState(false)
+  const current = steps[step - 1]
 
-  const steps = [
-    { n: 1, label: 'Describe', desc: 'Paste your app idea' },
-    { n: 2, label: 'Method', desc: 'Choose Scrum or Kanban' },
-    { n: 3, label: 'Configure', desc: 'Tune sprints & velocity' },
-  ]
+  const summaryRows: Array<[string, string]> = [['Method', methodology === 'scrum' ? 'Scrum' : 'Kanban']]
+  if (methodology === 'scrum') {
+    summaryRows.push(['Sprints', String(sprintCount)])
+    summaryRows.push(['Sprint length', sprintLength])
+    summaryRows.push(['Scope', scopeMode])
+    if (teamVelocity) summaryRows.push(['Velocity', `${teamVelocity} pts/sprint`])
+  } else {
+    summaryRows.push(['Columns', String(numColumns)])
+  }
+  const estStories = Math.max(1, Math.round(charCount / 120))
 
   return (
-    <Panel variant="paper" chamfered={true} bordered={true} tag="SPEC 00" style={{ maxWidth: 980, width: '100%', padding: '1.5rem', display: 'grid', gridTemplateColumns: '1fr 320px', gap: '1.5rem' }}>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-          <div>
-            <Readout variant="label" size="xs">AGILE SPECIFICATION SHEET — REV 02</Readout>
-            <h1 style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: '1.6rem', color: 'var(--ink)', marginTop: '0.35rem', lineHeight: 1.1 }}>Rune</h1>
-            <Readout variant="status" size="sm" style={{ marginTop: '0.25rem', display: 'block' }}>Describe your app and we will draft the delivery plan on the board.</Readout>
-          </div>
-          <div style={{ display: 'flex', gap: 6 }}>
-            {steps.map(s => (
-              <Chip key={s.n} variant={step === s.n ? 'amber' : 'outline'} size="sm" style={{ fontSize: '0.55rem', padding: '2px 8px' }}>
-                <Readout variant="metric" size="xs">{String(s.n).padStart(2, '0')}</Readout>
-                {s.label}
-              </Chip>
-            ))}
-          </div>
+    <div className="intake-grid">
+      <Panel radius="xl" style={{ padding: 'var(--space-5)', display: 'flex', flexDirection: 'column', gap: 20, minWidth: 0 }}>
+        <div role="group" aria-label={`Step ${step} of ${steps.length}`} style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+          {steps.map((s, i) => (
+            <React.Fragment key={s.n}>
+              <div aria-current={step === s.n ? 'step' : undefined} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span
+                  aria-hidden="true"
+                  style={{
+                    width: 22,
+                    height: 22,
+                    borderRadius: 'var(--radius-pill)',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: 12,
+                    fontWeight: 600,
+                    fontVariantNumeric: 'tabular-nums',
+                    background: step === s.n ? 'var(--primary)' : step > s.n ? 'var(--primary-soft)' : 'var(--surface-3)',
+                    color: step === s.n ? 'var(--on-primary)' : step > s.n ? 'var(--primary-text)' : 'var(--muted)',
+                  }}
+                >
+                  {s.n}
+                </span>
+                <span style={{ fontSize: 13, fontWeight: step === s.n ? 600 : 500, color: step === s.n ? 'var(--ink)' : 'var(--muted)' }}>
+                  {s.label}
+                </span>
+              </div>
+              {i < steps.length - 1 && (
+                <span aria-hidden="true" style={{ width: 24, height: 1, background: step > s.n ? 'var(--primary)' : 'var(--border)', margin: '0 2px' }} />
+              )}
+            </React.Fragment>
+          ))}
+        </div>
+
+        <div>
+          <h2 style={{ fontSize: 'var(--fs-lg)', fontWeight: 600, lineHeight: 1.25 }}>{current.title}</h2>
+          <p style={{ fontSize: 14, color: 'var(--muted)', marginTop: 6, lineHeight: 1.5 }}>{current.desc}</p>
         </div>
 
         {step === 1 && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <Textarea
-              label="APP DESCRIPTION"
+              label="App description"
               value={description}
               onChange={e => onDescriptionChange(e.target.value)}
               placeholder="Paste a rough description of your app…"
-              rows={6}
+              rows={8}
               size="md"
-              hint={`${String(charCount).padStart(3, '0')} CHARS`}
+              hint={`${charCount} characters`}
             />
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-              {examplePrompts.map((ex, i) => (
-                <Chip key={i} variant="outline" size="sm" onClick={() => onDescriptionChange(
-                  'A collaborative task management app where teams can create boards, assign tasks with priorities and story points, track progress through epics, and organize work into sprints or continuous flow columns. Features include real-time updates, dependency tracking between tasks, and a visual board showing the status of every item.'
-                )}>
-                  {ex.label}
-                </Chip>
-              ))}
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-              <Button variant="primary" onClick={() => onStepChange(2)} size="md">Continue →</Button>
+            <div>
+              <span style={{ display: 'block', fontSize: 13, color: 'var(--muted)', marginBottom: 8 }}>Start from an example</span>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                {examplePrompts.map(ex => (
+                  <Button key={ex.label} variant="secondary" size="sm" onClick={() => onDescriptionChange(ex.text)}>
+                    {ex.label}
+                  </Button>
+                ))}
+              </div>
             </div>
           </div>
         )}
 
         {step === 2 && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <Readout variant="label" size="xs" style={{ marginBottom: '0.25rem', display: 'block' }}>METHODOLOGY</Readout>
-            <Tabs tabs={methodTabs} activeTab={methodology} onChange={onMethodologyChange} variant="enclosed" fullWidth />
-            <Readout variant="status" size="sm" style={{ display: 'block', lineHeight: 1.5 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <MethodologyToggle value={methodology} onChange={onMethodologyChange} />
+            <p style={{ fontSize: 14, color: 'var(--muted)', lineHeight: 1.55 }}>
               {methodology === 'scrum'
-                ? 'Scrum: numbered sprints with goals, timeline strip, velocity tracking, and scope controls.'
-                : 'Kanban: continuous flow columns with WIP limits, no sprints, same board language.'}
-            </Readout>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <Button variant="ghost" onClick={() => onStepChange(1)} size="md">← Back</Button>
-              <Button variant="primary" onClick={() => onStepChange(3)} size="md">Continue →</Button>
-            </div>
+                ? 'Scrum plans the work into numbered sprints with goals, a timeline strip and velocity tracking.'
+                : 'Kanban plans the work as a continuous flow with WIP limits and no fixed sprints.'}
+            </p>
           </div>
         )}
 
         {step === 3 && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <Readout variant="label" size="xs" style={{ marginBottom: '0.25rem', display: 'block' }}>SPRINT CONFIGURATION</Readout>
-            <Panel variant="surface" chamfered={true} bordered={true} style={{ padding: '1rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem' }}>
-              <Input
-                label="SPRINT COUNT — 2–6"
-                type="number"
-                min={2}
-                max={6}
-                value={sprintCount}
-                onChange={e => onSprintCountChange(Number(e.target.value))}
-                size="sm"
-              />
-              <Select
-                label="SPRINT LENGTH"
-                options={[{ value: '1 week', label: '1 week' }, { value: '2 weeks', label: '2 weeks' }]}
-                value={sprintLength}
-                onChange={e => onSprintLengthChange(e.target.value)}
-                size="sm"
-              />
-              <Select
-                label="SCOPE MODE"
-                options={[{ value: 'MVP', label: 'MVP' }, { value: 'Full build', label: 'Full build' }]}
-                value={scopeMode}
-                onChange={e => onScopeModeChange(e.target.value)}
-                size="sm"
-              />
-              <Input
-                label="VELOCITY — PTS/SPRINT"
-                type="number"
-                value={teamVelocity}
-                onChange={e => onTeamVelocityChange(e.target.value)}
-                placeholder="—"
-                size="sm"
-              />
-              <Input
-                label="STARTING COLUMNS"
-                type="number"
-                min={4}
-                max={6}
-                value={numColumns}
-                onChange={e => onNumColumnsChange(Number(e.target.value))}
-                size="sm"
-              />
-            </Panel>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <Button variant="ghost" onClick={() => onStepChange(2)} size="md">← Back</Button>
-              <Button variant="primary" onClick={onGenerate} disabled={loading || !description.trim()} size="md" loading={loading}>
-                {loading ? 'Generating…' : 'Generate plan'}
-              </Button>
-            </div>
-          </div>
+          <CustomizePanel
+            sprintCount={sprintCount}
+            sprintLength={sprintLength}
+            scopeMode={scopeMode}
+            teamVelocity={teamVelocity}
+            numColumns={numColumns}
+            onSprintCountChange={onSprintCountChange}
+            onSprintLengthChange={onSprintLengthChange}
+            onScopeModeChange={onScopeModeChange}
+            onTeamVelocityChange={onTeamVelocityChange}
+            onNumColumnsChange={onNumColumnsChange}
+          />
         )}
-      </div>
 
-      <Panel variant="surface" chamfered={true} bordered={true} style={{ padding: '1.25rem', height: 'fit-content', position: 'sticky', top: '1.5rem' }}>
-        <Readout variant="label" size="xs" style={{ marginBottom: '0.75rem', display: 'block' }}>LIVE PREVIEW</Readout>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', fontFamily: "'IBM Plex Mono', monospace", fontSize: '0.65rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <Readout variant="status" size="xs">METHOD</Readout>
-            <Readout variant="metric" size="xs">{methodology.toUpperCase()}</Readout>
-          </div>
-          {methodology === 'scrum' && (
-              <>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <Readout variant="status" size="xs">SPRINTS</Readout>
-                  <Readout variant="metric" size="xs">{sprintCount}</Readout>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <Readout variant="status" size="xs">LENGTH</Readout>
-                  <Readout variant="metric" size="xs">{sprintLength}</Readout>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <Readout variant="status" size="xs">SCOPE</Readout>
-                  <Readout variant="metric" size="xs">{scopeMode}</Readout>
-                </div>
-                {teamVelocity && (
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <Readout variant="status" size="xs">VELOCITY</Readout>
-                    <Readout variant="metric" size="xs">{teamVelocity} pts/sprint</Readout>
-                  </div>
-                )}
-              </>
-            )}
-            {methodology === 'kanban' && (
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <Readout variant="status" size="xs">COLUMNS</Readout>
-              <Readout variant="metric" size="xs">{numColumns}</Readout>
-            </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginTop: 'auto', paddingTop: 4 }}>
+          {step > 1 ? (
+            <Button variant="ghost" size="md" leftIcon={<ChevronLeft size={16} strokeWidth={2} />} onClick={() => onStepChange(step - 1)}>
+              Back
+            </Button>
+          ) : (
+            <span />
           )}
-          <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid var(--grid-line)', paddingTop: '0.5rem', marginTop: '0.5rem' }}>
-            <Readout variant="status" size="xs">EST. STORIES</Readout>
-            <Readout variant="metric" size="xs">{Math.max(1, Math.round(charCount / 120))}</Readout>
+          {step < steps.length ? (
+            <Button
+              variant="primary"
+              size="md"
+              rightIcon={<ChevronRight size={16} strokeWidth={2} />}
+              disabled={!description.trim()}
+              onClick={() => onStepChange(step + 1)}
+            >
+              Continue
+            </Button>
+          ) : (
+            <Button variant="primary" size="md" loading={loading} disabled={!description.trim()} onClick={onGenerate}>
+              {loading ? 'Generating…' : 'Generate plan'}
+            </Button>
+          )}
+        </div>
+      </Panel>
+
+      <Panel variant="surface-2" radius="lg" style={{ padding: 'var(--space-4)', position: 'sticky', top: 'calc(var(--topbar-h) + 16px)', height: 'fit-content', boxShadow: 'none' }}>
+        <span style={{ display: 'block', fontSize: 11, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--muted)', marginBottom: 12 }}>
+          Summary
+        </span>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {summaryRows.map(([label, value]) => (
+            <div key={label} style={{ display: 'flex', justifyContent: 'space-between', gap: 12, fontSize: 13 }}>
+              <span style={{ color: 'var(--muted)' }}>{label}</span>
+              <span style={{ color: 'var(--ink)', fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>{value}</span>
+            </div>
+          ))}
+          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, fontSize: 13, borderTop: '1px solid var(--border)', paddingTop: 10, marginTop: 2 }}>
+            <span style={{ color: 'var(--muted)' }}>Est. stories</span>
+            <span style={{ color: 'var(--ink)', fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>{estStories}</span>
           </div>
         </div>
       </Panel>
-    </Panel>
+    </div>
   )
 }
