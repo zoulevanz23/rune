@@ -3,6 +3,14 @@ export const landingNav = [
   { id: 'methods', label: 'Methodologies' },
   { id: 'caps', label: 'Capabilities' },
   { id: 'pricing', label: 'Pricing' },
+  { id: 'faq', label: 'FAQ' },
+]
+
+export const stats = [
+  { value: '3', label: 'steps from description to board' },
+  { value: '2', label: 'methodologies built in' },
+  { value: '3', label: 'export formats: MD, CSV, PDF' },
+  { value: '0', label: 'sign-ups required to start' },
 ]
 
 export const hero = {

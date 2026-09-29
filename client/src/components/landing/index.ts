@@ -1,4 +1,5 @@
 export { LandingHero } from './LandingHero'
+export { LandingStats } from './LandingStats'
 export { LandingHowItWorks } from './LandingHowItWorks'
 export { LandingMethodologies } from './LandingMethodologies'
 export { LandingCapabilities } from './LandingCapabilities'

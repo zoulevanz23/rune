@@ -7,14 +7,26 @@ export const LandingFooter: React.FC = () => {
   const navigate = useNavigate()
 
   return (
-    <footer style={{ marginTop: 32, paddingTop: 48, borderTop: '1px solid var(--border)', textAlign: 'center' }}>
-      <h2 style={{ fontSize: 'var(--fs-section)', fontWeight: 700, lineHeight: 1.2 }}>{footer.headline}</h2>
-      <p style={{ fontSize: 15, color: 'var(--muted)', marginTop: 10, marginBottom: 24 }}>{footer.sub}</p>
-      <Button variant="primary" onClick={() => navigate('/new')} size="lg" style={{ minWidth: 190 }}>
-        {footer.cta}
-      </Button>
+    <footer>
+      <section
+        style={{
+          background: 'var(--nav)',
+          borderRadius: 'var(--radius-xl)',
+          padding: '56px 32px',
+          textAlign: 'center',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+        }}
+      >
+        <h2 style={{ fontSize: 'var(--fs-section)', fontWeight: 700, lineHeight: 1.2, color: 'var(--nav-text)' }}>{footer.headline}</h2>
+        <p style={{ fontSize: 15, color: 'var(--nav-muted)', marginTop: 10, marginBottom: 28 }}>{footer.sub}</p>
+        <Button variant="primary" onClick={() => navigate('/new')} size="lg" style={{ minWidth: 190 }}>
+          {footer.cta}
+        </Button>
+      </section>
 
-      <div style={{ borderTop: '1px solid var(--border)', marginTop: 40, paddingTop: 20, paddingBottom: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+      <div style={{ marginTop: 28, paddingTop: 20, borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', fontSize: 13, color: 'var(--muted)' }}>
           <span>© {new Date().getFullYear()} Rune</span>
           <span aria-hidden="true">·</span>

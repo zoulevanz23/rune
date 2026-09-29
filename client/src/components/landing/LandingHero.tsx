@@ -23,19 +23,17 @@ export const LandingHero: React.FC = () => {
         {hero.subtitle}
       </p>
 
-      <div style={{ display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center', marginTop: 8 }}>
+      <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center', marginTop: 8 }}>
         <Button variant="primary" onClick={() => navigate('/new')} size="lg" style={{ minWidth: 210 }}>
           {hero.primaryCta}
         </Button>
-        <a
-          href="#how"
-          onClick={e => { e.preventDefault(); scrollTo('how') }}
-          style={{ fontSize: 14, fontWeight: 500, color: 'var(--primary-text)', textUnderlineOffset: 4, textDecoration: 'underline', textDecorationColor: 'transparent', transition: 'text-decoration-color var(--dur-fast) var(--ease)' }}
-          onMouseEnter={e => { e.currentTarget.style.textDecorationColor = 'currentColor' }}
-          onMouseLeave={e => { e.currentTarget.style.textDecorationColor = 'transparent' }}
+        <Button
+          variant="secondary"
+          size="lg"
+          onClick={() => scrollTo('how')}
         >
           {hero.secondaryCta}
-        </a>
+        </Button>
       </div>
 
       <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center', marginTop: 16, fontSize: 13, color: 'var(--muted)' }}>

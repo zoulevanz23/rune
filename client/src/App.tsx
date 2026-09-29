@@ -14,16 +14,16 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000
 
 const AppContent: React.FC = () => {
   return (
-    <Shell>
-      <Routes>
-        <Route path="/" element={<LandingPage apiBaseUrl={API_BASE_URL} />} />
+    <Routes>
+      <Route path="/" element={<LandingPage apiBaseUrl={API_BASE_URL} />} />
+      <Route element={<Shell />}>
         <Route path="/new" element={<IntakePage apiBaseUrl={API_BASE_URL} />} />
         <Route path="/board" element={<BoardPage apiBaseUrl={API_BASE_URL} />} />
         <Route path="/my-plans" element={<MyPlansPage />} />
         <Route path="/styleguide" element={<StyleguidePage />} />
-        <Route path="*" element={<Navigate to="/" />} />
-      </Routes>
-    </Shell>
+      </Route>
+      <Route path="*" element={<Navigate to="/" />} />
+    </Routes>
   )
 }
 
