@@ -1,91 +1,192 @@
+﻿/* Rune design tokens — "Modern Corporate"
+   Light is the default theme. Dark is applied via [data-theme="dark"]. */
+
 :root {
-  /* v2 instrument-grade palette — dark theme (default) */
-  --canvas: #0D1A24;
-  --surface: #14262F;
-  --surface-alt: #1C2F3A;
-  --grid-line: #2A4655;
-  --paper: #E8E3D4;
-  --ink: #12181C;
-  --ink-soft: #4B5A62;
-  --bright: #EAF1F7;
-  --fog: #8FA6B5;
+  color-scheme: light;
 
-  --amber: #C98A34;
-  --coral: #BD5646;
-  --teal: #3A8078;
-  --violet: #6E62AE;
-  --sage: #5F8552;
+  /* ---- Nav ---- */
+  --nav: #0B2545;
+  --nav-2: #13315C;
+  --nav-text: #C9D4E5;
+  --nav-muted: #7F93B2;
 
-  /* legacy aliases — keep existing components working during v2 migration */
-  --blue-deep: var(--canvas);
-  --blue-mid: var(--surface-alt);
-  --blue-grid: var(--grid-line);
-  --blue-grid-faint: rgba(42, 70, 85, 0.35);
-  --sky: var(--bright);
-  --sky-dim: var(--fog);
-  --paper-shadow: rgba(0,0,0,0);
-  --chamfer: 14px;
-
-  /* density defaults (comfortable) */
-  --row-height: 44px;
-  --card-padding: 0.7rem 0.8rem;
-  --font-size-sm: 0.72rem;
-  --font-size-base: 0.86rem;
-  --gap-sm: 0.5rem;
-}
-
-/* Light theme — keep paper light, adjust canvas/surface only */
-[data-theme="light"] {
-  --canvas: #F4F1EB;
+  /* ---- Surfaces & Borders ---- */
+  --bg: #F3F5F8;
   --surface: #FFFFFF;
-  --surface-alt: #EBE7DD;
-  --grid-line: #C9C2B5;
-  --paper: #FFFEF7;
-  --ink: #12181C;
-  --ink-soft: #5A6B75;
-  --bright: #0D1A24;
-  --fog: #6B7D8A;
-}
+  --surface-2: #EAEEF3;
+  --surface-3: #E1E7EF;
+  --border: #DCE2EA;
+  --border-strong: #B8C1CE;
 
-/* Density overrides — specificity beats :root */
-[data-density="compact"] {
-  --row-height: 28px;
-  --card-padding: 0.4rem 0.5rem;
-  --font-size-sm: 0.65rem;
-  --font-size-base: 0.75rem;
-  --gap-sm: 0.3rem;
-}
+  /* ---- Text ---- */
+  --ink: #1A2433;
+  --muted: #566275;
+  --ink-soft: var(--muted);
+  --ink-mute: #59697E;
+  --ink-inverse: #FFFFFF;
 
-[data-density="comfortable"] {
+  /* ---- Primary / Brand ---- */
+  --primary: #1D4E89;
+  --primary-hover: #163E6E;
+  --primary-text: #1D4E89;
+  --primary-soft: #E6EEF8;
+  --primary-ring: rgba(29, 78, 137, 0.4);
+  --on-primary: #FFFFFF;
+
+  /* ---- Status Colors ---- */
+  --success: #1E7A4C;
+  --success-soft: #E3F3EA;
+  --success-text: #1E7A4C;
+
+  --warning: #8A5300;
+  --warning-soft: #FBEFD9;
+  --warning-text: #8A5300;
+
+  --danger: #A32A2A;
+  --danger-soft: #FBE7E7;
+  --danger-text: #A32A2A;
+
+  /* ---- Radii ---- */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 12px;
+  --radius-pill: 999px;
+
+  /* ---- Shadows & Overlays ---- */
+  --shadow-1: 0 1px 2px rgba(11, 37, 69, 0.06);
+  --shadow-2: 0 8px 24px rgba(11, 37, 69, 0.14);
+  --overlay: rgba(11, 37, 69, 0.35);
+
+  /* ---- Spacing Scale ---- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+
+  /* ---- Typography ---- */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --fs-caption: 12px;
+  --fs-sm: 13px;
+  --fs-base: 14px;
+  --fs-md: 16px;
+  --fs-lg: 20px;
+  --fs-xl: 24px;
+  --fs-section: 26px;
+  --fs-hero: clamp(40px, 6vw, 56px);
+
+  --lh-tight: 1.2;
+  --lh-base: 1.5;
+
+  /* ---- Motion ---- */
+  --dur-fast: 150ms;
+  --dur: 200ms;
+  --dur-slow: 220ms;
+  --ease: cubic-bezier(0.2, 0.6, 0.3, 1);
+
+  /* ---- Layout ---- */
+  --sidebar-w: 232px;
+  --sidebar-w-collapsed: 64px;
+  --topbar-h: 56px;
+  --content-max: 1500px;
+  --marketing-max: 1200px;
+
+  /* ---- Density toggle values ---- */
+  --card-padding: 12px;
+  --card-font-size: 14px;
+
+  /* ---- Temporary Legacy Aliases ---- */
+  --canvas: var(--bg);
+  --surface-alt: var(--surface-2);
+  --grid-line: var(--border);
+  --blue-grid: var(--border);
+  --blue-grid-faint: rgba(29, 78, 137, 0.08);
+  --paper: var(--surface);
+  --paper-shadow: var(--shadow-1);
+  --bright: var(--ink);
+  --fog: var(--muted);
+  --amber: var(--primary);
+  --coral: var(--danger);
+  --green: var(--success);
+  --teal: var(--primary-text);
+  --violet: var(--primary);
+  --sage: var(--muted);
+  --blue-deep: var(--bg);
+  --blue-mid: var(--surface-2);
+  --sky: var(--ink);
+  --sky-dim: var(--muted);
+  --chamfer: 0px;
   --row-height: 44px;
-  --card-padding: 0.7rem 0.8rem;
-  --font-size-sm: 0.72rem;
-  --font-size-base: 0.86rem;
-  --gap-sm: 0.5rem;
+  --font-size-sm: 13px;
+  --font-size-base: 14px;
+  --gap-sm: 8px;
 }
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+[data-theme='dark'] {
+  color-scheme: dark;
+
+  /* ---- Nav ---- */
+  --nav: #08101D;
+  --nav-2: #111C30;
+  --nav-text: #B7C4DA;
+  --nav-muted: #6E82A3;
+
+  /* ---- Surfaces & Borders ---- */
+  --bg: #0B1220;
+  --surface: #111A2B;
+  --surface-2: #172238;
+  --surface-3: #1F2D48;
+  --border: #24314A;
+  --border-strong: #37476A;
+
+  /* ---- Text ---- */
+  --ink: #E6EBF3;
+  --muted: #9AA8BF;
+  --ink-soft: var(--muted);
+  --ink-mute: #7C91B5;
+  --ink-inverse: #0B1220;
+
+  /* ---- Primary / Brand ---- */
+  --primary: #2F6FBF;
+  --primary-hover: #3A7DD1;
+  --primary-text: #7FB0F0;
+  --primary-soft: #16294A;
+  --primary-ring: rgba(127, 176, 240, 0.4);
+  --on-primary: #FFFFFF;
+
+  /* ---- Status Colors ---- */
+  --success: #4CC38A;
+  --success-soft: #12281E;
+  --success-text: #4CC38A;
+
+  --warning: #F0A24B;
+  --warning-soft: #33240F;
+  --warning-text: #F0A24B;
+
+  --danger: #FF8A7A;
+  --danger-soft: #341A17;
+  --danger-text: #FF8A7A;
+
+  /* ---- Shadows & Overlays ---- */
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-2: 0 8px 24px rgba(0, 0, 0, 0.55);
+  --overlay: rgba(0, 0, 0, 0.6);
+
+  --blue-grid-faint: rgba(47, 111, 191, 0.12);
 }
 
-body {
-  background-color: var(--canvas);
-  font-family: 'IBM Plex Sans', sans-serif;
-  color: var(--bright);
-  min-height: 100vh;
+[data-density='compact'] {
+  --card-padding: 8px 10px;
+  --card-font-size: 13px;
+  --row-height: 36px;
 }
 
-h1, h2, h3, h4, h5, h6 {
-  font-family: 'Space Grotesk', sans-serif;
-  color: var(--bright);
+[data-density='comfortable'] {
+  --card-padding: 12px;
+  --card-font-size: 14px;
+  --row-height: 44px;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-}

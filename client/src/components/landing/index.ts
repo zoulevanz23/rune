@@ -1,0 +1,7 @@
+export { LandingHero } from './LandingHero'
+export { LandingHowItWorks } from './LandingHowItWorks'
+export { LandingMethodologies } from './LandingMethodologies'
+export { LandingCapabilities } from './LandingCapabilities'
+export { LandingPricing } from './LandingPricing'
+export { LandingFAQ } from './LandingFAQ'
+export { LandingFooter } from './LandingFooter'

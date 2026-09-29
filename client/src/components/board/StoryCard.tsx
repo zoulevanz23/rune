@@ -2,8 +2,15 @@ import React, { useState } from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { Story } from '@/types/plan'
+import { Panel } from '@/components/primitives'
+import { Button } from '@/components/primitives'
+import { IconButton } from '@/components/primitives'
+import { Readout } from '@/components/primitives'
+import { Chip } from '@/components/primitives'
+import { Input } from '@/components/primitives'
+import { Textarea } from '@/components/primitives'
 
-const epicColors = ['var(--amber)', 'var(--coral)', 'var(--teal)', 'var(--violet)', 'var(--sage)']
+const epicColors = ['var(--amber)', 'var(--coral)', 'var(--teal)', 'var(--violet)', 'var(--sage)'] as const
 
 interface StoryCardProps {
   story: Story
@@ -20,22 +27,25 @@ interface StoryCardProps {
   dimmed?: boolean
 }
 
+const getCrit = (criteria: any): string[] => {
+  if (Array.isArray(criteria)) return criteria
+  if (typeof criteria === 'string') {
+    try { const p = JSON.parse(criteria); return Array.isArray(p) ? p : [String(criteria)] }
+    catch { return [String(criteria)] }
+  }
+  return []
+}
+
 export const StoryCard: React.FC<StoryCardProps> = ({
   story, epicName, epicIndex, onEdit, onDelete, onCyclePoints, onToggleDone, onMoveToDone, isDoneColumn, selected, onToggleSelect, dimmed,
 }) => {
   const [editing, setEditing] = useState(false)
   const [expanded, setExpanded] = useState(false)
-  const getCrit = (): string[] => {
-    const v: any = story.criteria
-    if (Array.isArray(v)) return v
-    if (typeof v === 'string') { try { const p = JSON.parse(v); return Array.isArray(p) ? p : [String(v)] } catch { return [String(v)] } }
-    return []
-  }
   const [editTitle, setEditTitle] = useState(story.title)
-  const [editCriteria, setEditCriteria] = useState(getCrit().join('\n'))
+  const [editCriteria, setEditCriteria] = useState(getCrit(story.criteria).join('\n'))
   const [hover, setHover] = useState(false)
   const borderColor = epicColors[epicIndex % epicColors.length]
-  const critList = getCrit()
+  const critList = getCrit(story.criteria)
 
   const {
     setNodeRef,
@@ -46,28 +56,28 @@ export const StoryCard: React.FC<StoryCardProps> = ({
     transition,
   } = useSortable({ id: story.id, disabled: editing })
 
+  const stopDrag = (e: React.SyntheticEvent) => e.stopPropagation()
+
+  const handleSave = () => {
+    if (editTitle.trim()) onEdit('title', editTitle.trim())
+    const crits = editCriteria.split('\n').map(s => s.trim()).filter(Boolean)
+    onEdit('criteria', crits.length ? crits : story.criteria)
+    setEditing(false)
+  }
+
   const style: React.CSSProperties = {
     background: selected ? 'rgba(201,138,52,0.08)' : 'var(--paper)',
     color: 'var(--ink)',
     border: `1px solid ${selected ? 'var(--amber)' : 'var(--grid-line)'}`,
     borderLeft: `3px solid ${borderColor}`,
-    clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)',
-    padding: expanded ? 'var(--card-padding)' : 'var(--card-padding)',
+    clipPath: 'polygon(0 0, calc(100% - var(--chamfer)) 0, 100% var(--chamfer), 100% 100%, 0 100%)',
+    padding: 'var(--card-padding)',
     marginBottom: 'var(--gap-sm)',
     opacity: dimmed ? 0.28 : isDragging ? 0.25 : story.done ? 0.55 : 1,
     transform: CSS.Transform.toString(transform),
     transition,
     position: 'relative',
     fontSize: 'var(--font-size-base)',
-  }
-
-  const stopDrag = (e: React.SyntheticEvent) => e.stopPropagation()
-
-  const handleSave = () => {
-    if (editTitle.trim()) onEdit('title', editTitle.trim())
-    const crits = editCriteria.split('\n').map(s=>s.trim()).filter(Boolean)
-    onEdit('criteria', crits.length ? crits : story.criteria)
-    setEditing(false)
   }
 
   return (
@@ -80,79 +90,71 @@ export const StoryCard: React.FC<StoryCardProps> = ({
       {...attributes}
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.45rem' }}>
-        <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: '0.62rem', letterSpacing: '0.06em', color: 'var(--ink-soft)', display:'flex', alignItems:'center', gap:4 }}>
-          <button
-            onPointerDown={stopDrag}
-            onClick={e => { e.stopPropagation(); onToggleSelect?.() }}
-            title={selected ? 'Deselect (bulk)' : 'Select for bulk'}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+          <IconButton
+            size="sm"
+            variant="ghost"
+            aria-label={selected ? 'Deselect (bulk)' : 'Select for bulk'}
             aria-pressed={!!selected}
-            style={{
-              width: 14, height: 14,
-              border: `1px solid ${selected ? 'var(--amber)' : 'var(--grid-line)'}`,
-              background: selected ? 'var(--amber)' : 'transparent',
-              color: selected ? '#fff' : 'transparent',
-              cursor: 'pointer', fontSize:'0.5rem', display:'flex', alignItems:'center', justifyContent:'center',
-              flexShrink:0,
-            }}
-          >{selected ? '✓' : ''}</button>
-          <span style={{ fontSize:'0.55rem', opacity:0.5, cursor:'grab', userSelect:'none' }} title="Drag">⠿</span>
-          {story.id}
-        </span>
-        <div style={{ display: 'flex', gap: '0.3rem', alignItems: 'center' }}>
-          <button
+            onClick={e => { e.stopPropagation(); onToggleSelect?.() }}
             onPointerDown={stopDrag}
-            onClick={e => { e.stopPropagation(); if (editing) handleSave(); else { setEditTitle(story.title); setEditCriteria(getCrit().join('\n')); setEditing(true) } }}
-            title={editing ? 'Save' : 'Edit'}
-            style={{
-              background: editing ? 'var(--ink)' : 'var(--surface)',
-              color: editing ? 'var(--paper)' : 'var(--ink)',
-              border: '1px solid var(--grid-line)',
-              width: 22, height: 22, cursor: 'pointer', fontSize: '0.62rem',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              flexShrink:0
-            }}
-          >{editing ? '✓' : '✎'}</button>
-          <span
+            style={{ width: '22px', height: '22px', fontSize: '0.55rem', color: selected ? 'var(--amber)' : 'var(--ink-soft)', background: selected ? 'rgba(201,138,52,0.1)' : 'transparent', borderColor: selected ? 'var(--amber)' : 'var(--grid-line)' }}
+          >
+            {selected ? '✓' : '☐'}
+          </IconButton>
+          <span style={{ fontSize: '0.55rem', opacity: 0.5, cursor: 'grab', userSelect: 'none' }} title="Drag">⠿</span>
+          <Readout variant="status" size="xs">{story.id}</Readout>
+        </div>
+        <div style={{ display: 'flex', gap: '0.25rem', alignItems: 'center' }}>
+          <IconButton
+            size="sm"
+            variant={editing ? 'primary' : 'ghost'}
+            aria-label={editing ? 'Save' : 'Edit'}
+            onClick={e => { e.stopPropagation(); if (editing) handleSave(); else { setEditTitle(story.title); setEditCriteria(getCrit(story.criteria).join('\n')); setEditing(true) } }}
             onPointerDown={stopDrag}
+          >
+            {editing ? '✓' : '✎'}
+          </IconButton>
+          <IconButton
+            size="sm"
+            variant={story.points !== null && story.points !== undefined ? 'primary' : 'ghost'}
+            aria-label="Cycle points"
             onClick={e => { e.stopPropagation(); onCyclePoints() }}
-            title="Cycle points"
-            style={{
-              width: 22, height: 22,
-              background: story.points !== null && story.points !== undefined ? 'var(--ink)' : 'transparent',
-              color: story.points !== null && story.points !== undefined ? 'var(--paper)' : 'var(--ink-soft)',
-              border: story.points !== null && story.points !== undefined ? 'none' : '1px dashed var(--grid-line)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: '0.58rem', fontFamily: "'IBM Plex Mono', monospace",
-              cursor: 'pointer',
-              clipPath: 'polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 0 100%)',
-              flexShrink:0, opacity: story.points !== null ? 1 : 0.6
-            }}
-          >{story.points ?? '·'}</span>
-          <button
             onPointerDown={stopDrag}
-            onClick={e => { e.stopPropagation(); setExpanded(v=>!v) }}
-            title={expanded ? 'Minimize' : 'Expand — bigger view'}
-            style={{
-              background: expanded ? 'var(--surface)' : 'var(--amber)',
-              color: expanded ? 'var(--ink)' : '#fff',
-              border: `1px solid ${expanded ? 'var(--grid-line)' : 'var(--amber)'}`,
-              width: 26, height: 26, cursor: 'pointer', fontSize: '0.78rem',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              flexShrink:0, boxShadow: expanded ? 'none' : '0 1px 6px rgba(0,0,0,0.18)'
-            }}
-          >{expanded ? '−' : '⛶'}</button>
-          <button
+            style={{ width: '28px', height: '28px', clipPath: 'polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 0 100%)' }}
+          >
+            {story.points ?? '·'}
+          </IconButton>
+          <IconButton
+            size="sm"
+            variant={expanded ? 'ghost' : 'primary'}
+            aria-label={expanded ? 'Minimize' : 'Expand — bigger view'}
+            onClick={e => { e.stopPropagation(); setExpanded(v => !v) }}
             onPointerDown={stopDrag}
+            style={{ width: '30px', height: '30px' }}
+          >
+            {expanded ? '−' : '⛶'}
+          </IconButton>
+          <IconButton
+            size="sm"
+            variant={story.done ? 'primary' : 'ghost'}
+            aria-label={story.done ? 'Mark undone' : 'Mark done'}
             onClick={e => { e.stopPropagation(); onToggleDone() }}
-            title={story.done ? 'Mark undone' : 'Mark done'}
-            style={{ background: story.done ? 'var(--teal)' : 'transparent', border: `1px solid ${story.done ? 'var(--teal)' : 'var(--grid-line)'}`, width: 20, height: 20, borderRadius: '50%', cursor: 'pointer', color: story.done ? '#fff' : 'var(--ink-soft)', fontSize: '0.62rem', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink:0 }}
-          >{story.done ? '✓' : '○'}</button>
-          <button
             onPointerDown={stopDrag}
+            style={{ width: '24px', height: '24px', borderRadius: '50%', clipPath: 'none', color: story.done ? '#fff' : 'var(--ink-soft)', background: story.done ? 'var(--green)' : 'transparent', borderColor: story.done ? 'var(--green)' : 'var(--grid-line)' }}
+          >
+            {story.done ? '✓' : '○'}
+          </IconButton>
+          <IconButton
+            size="sm"
+            variant="danger"
+            aria-label="Delete"
             onClick={e => { e.stopPropagation(); onDelete() }}
-            title="Delete"
-            style={{ background: 'var(--surface)', border: '1px solid var(--grid-line)', width: 22, height: 22, cursor: 'pointer', color: 'var(--coral)', fontSize: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink:0 }}
-          >×</button>
+            onPointerDown={stopDrag}
+            style={{ width: '24px', height: '24px' }}
+          >
+            ×
+          </IconButton>
         </div>
       </div>
 
@@ -160,33 +162,68 @@ export const StoryCard: React.FC<StoryCardProps> = ({
 
       {editing ? (
         <div onPointerDown={stopDrag}>
-          <input value={editTitle} onChange={e => setEditTitle(e.target.value)} placeholder="Title" autoFocus style={{ width: '100%', fontFamily: "'IBM Plex Sans', sans-serif", border: '1px solid var(--grid-line)', background: '#F4EFE2', padding: '0.4rem', marginBottom: '0.4rem', color: 'var(--ink)', fontSize:'0.84rem', outline:'none' }} />
-          <textarea value={editCriteria} onChange={e => setEditCriteria(e.target.value)} placeholder="One criterion per line" style={{ width: '100%', fontFamily: "'IBM Plex Sans', sans-serif", border: '1px solid var(--grid-line)', background: '#F4EFE2', padding: '0.4rem', height: 72, color: 'var(--ink)', fontSize:'0.78rem', outline:'none' }} />
-          <div style={{ display:'flex', gap:6, marginTop:6 }}>
-            <button onPointerDown={stopDrag} onClick={e=>{e.stopPropagation(); handleSave()}} style={{ flex:1, fontFamily:"'IBM Plex Mono', monospace", fontSize:'0.62rem', padding:'0.4rem', background:'var(--ink)', color:'var(--paper)', border:'none', cursor:'pointer' }}>SAVE</button>
-            <button onPointerDown={stopDrag} onClick={e=>{e.stopPropagation(); setEditing(false)}} style={{ flex:1, fontFamily:"'IBM Plex Mono', monospace", fontSize:'0.62rem', padding:'0.4rem', background:'var(--surface)', border:'1px solid var(--grid-line)', cursor:'pointer', color:'var(--ink)' }}>CANCEL</button>
+          <Input
+            value={editTitle}
+            onChange={e => setEditTitle(e.target.value)}
+            placeholder="Title"
+            autoFocus
+            size="sm"
+            style={{ marginBottom: '0.4rem' }}
+          />
+          <Textarea
+            value={editCriteria}
+            onChange={e => setEditCriteria(e.target.value)}
+            placeholder="One criterion per line"
+            size="sm"
+            style={{ marginBottom: '0.5rem', minHeight: '72px' }}
+          />
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <Button variant="primary" size="sm" onClick={e => { e.stopPropagation(); handleSave() }} style={{ flex: 1 }}>SAVE</Button>
+            <Button variant="ghost" size="sm" onClick={e => { e.stopPropagation(); setEditing(false) }} style={{ flex: 1 }}>CANCEL</Button>
           </div>
         </div>
       ) : (
-        <div onDoubleClick={() => { setEditTitle(story.title); setEditCriteria(getCrit().join('\n')); setEditing(true) }} style={{ cursor: 'text' }}>
-          <div style={{ fontWeight: 600, fontSize: '0.86rem', lineHeight: 1.35, marginBottom: '0.35rem', textDecoration: story.done ? 'line-through' : 'none', color: story.done ? 'var(--ink-soft)' : 'var(--ink)' }}>{story.title}</div>
+        <div onDoubleClick={() => { setEditTitle(story.title); setEditCriteria(getCrit(story.criteria).join('\n')); setEditing(true) }} style={{ cursor: 'text' }}>
+          <div style={{ fontWeight: 600, fontSize: '0.86rem', lineHeight: 1.35, marginBottom: '0.35rem', textDecoration: story.done ? 'line-through' : 'none', color: story.done ? 'var(--ink-soft)' : 'var(--ink)' }}>
+            {story.title}
+          </div>
           {critList.slice(0, expanded ? 99 : 2).map((c, i) => (
             <div key={i} style={{ fontSize: '0.74rem', color: 'var(--ink-soft)', lineHeight: 1.4, paddingLeft: '0.5rem', position: 'relative' }}>
               <span style={{ position: 'absolute', left: 0 }}>—</span>{c}
             </div>
           ))}
-          {critList.length > 2 && !expanded && <div style={{ fontFamily:"'IBM Plex Mono', monospace", fontSize:'0.58rem', color:'var(--ink-soft)', marginTop:4 }}>+{critList.length - 2} more — expand to see</div>}
+          {critList.length > 2 && !expanded && (
+            <Readout variant="status" size="xs" style={{ marginTop: '0.35rem' }}>
+              +{critList.length - 2} more — expand to see
+            </Readout>
+          )}
           {story.depends_on.length > 0 && (
-            <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: '0.62rem', color: 'var(--ink-soft)', marginTop: '0.35rem' }}>needs {story.depends_on.join(', ')}</div>
+            <Readout variant="status" size="xs" style={{ marginTop: '0.35rem', color: 'var(--ink-soft)' }}>
+              needs {story.depends_on.join(', ')}
+            </Readout>
           )}
         </div>
       )}
 
-      <div style={{ marginTop: '0.55rem', display: 'flex', gap: '0.3rem', flexWrap: 'wrap', alignItems:'center' }}>
-        <span style={{ background: borderColor, color: '#fff', padding: '1px 5px', fontSize: '0.58rem', fontFamily: "'IBM Plex Mono', monospace", letterSpacing: '0.04em' }}>{epicName}</span>
-        {story.priority && <span style={{ background: 'var(--ink)', color: 'var(--paper)', padding: '1px 5px', fontSize: '0.58rem', fontFamily: "'IBM Plex Mono', monospace" }}>{story.priority}</span>}
+      <div style={{ marginTop: '0.55rem', display: 'flex', gap: '0.3rem', flexWrap: 'wrap', alignItems: 'center' }}>
+        <Chip variant="default" size="sm" style={{ background: borderColor, color: '#fff' }}>
+          {epicName}
+        </Chip>
+        {story.priority && (
+          <Chip variant="outline" size="sm">
+            {story.priority}
+          </Chip>
+        )}
         {!isDoneColumn && onMoveToDone && (
-          <button onPointerDown={stopDrag} onClick={e=>{e.stopPropagation(); onMoveToDone()}} title="Move to Done" style={{ marginLeft:'auto', fontFamily:"'IBM Plex Mono', monospace", fontSize:'0.56rem', letterSpacing:'0.06em', background:'var(--surface)', border:'1px solid var(--grid-line)', color:'var(--fog)', cursor:'pointer', padding:'2px 6px', clipPath:'polygon(0 0, calc(100% - 5px) 0, 100% 5px, 100% 100%, 0 100%)' }}>→ DONE</button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={e => { e.stopPropagation(); onMoveToDone() }}
+            onPointerDown={stopDrag}
+            style={{ marginLeft: 'auto', fontFamily: "'IBM Plex Mono', monospace", fontSize: '0.56rem', letterSpacing: '0.06em', clipPath: 'polygon(0 0, calc(100% - 5px) 0, 100% 5px, 100% 100%, 0 100%)' }}
+          >
+            → DONE
+          </Button>
         )}
       </div>
     </div>

@@ -41,9 +41,6 @@ export function usePlansRepository() {
       const all = await db.getAll('plans')
       return all
         .sort((a, b) => new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime())
-        .map(({ id, projectName, methodology, savedAt }) => ({
-          id, projectName, methodology, savedAt,
-        }))
     } catch (e) {
       setError(typeof e === 'string' ? e : 'List failed')
       return []

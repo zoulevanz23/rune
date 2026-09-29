@@ -4,7 +4,13 @@ import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-
 import { CSS } from '@dnd-kit/utilities'
 import { Group, Story, Epic } from '@/types/plan'
 import { StoryCard } from './StoryCard'
-import { Button } from '../shared/Button'
+import { Panel } from '@/components/primitives'
+import { Button } from '@/components/primitives'
+import { Readout } from '@/components/primitives'
+import { Chip } from '@/components/primitives'
+import { Input } from '@/components/primitives'
+import { Select } from '@/components/primitives'
+import { Textarea } from '@/components/primitives'
 
 interface GroupColumnProps {
   group: Group
@@ -24,6 +30,8 @@ interface GroupColumnProps {
   matchesSearch?: (story: Story, epicName?: string) => boolean
 }
 
+const epicColors = ['var(--amber)', 'var(--coral)', 'var(--teal)', 'var(--violet)', 'var(--sage)'] as const
+
 export const GroupColumn: React.FC<GroupColumnProps> = ({
   group, groupIndex, epics, doneColumnIndex, onEditStory, onDeleteStory, onCyclePoints, onToggleDone, onAddStory, onMoveToDone, onRenameGroup, onDeleteGroup, selectedIds, onToggleSelect, matchesSearch,
 }) => {
@@ -37,13 +45,15 @@ export const GroupColumn: React.FC<GroupColumnProps> = ({
   const [editName, setEditName] = useState(group.name)
   const isKanban = group.type === 'column'
   const isDoneColumn = doneColumnIndex === groupIndex
+  const wipLimit = isKanban ? group.wip_limit : null
+  const wipExceeded = wipLimit !== null && group.stories.length > wipLimit
 
   const { setNodeRef, isOver } = useDroppable({ id: `column-${groupIndex}` })
   const { attributes: colAttrs, listeners: colListeners, setNodeRef: setColRef, transform: colTransform, isDragging: colDragging, transition: colTransition } = useSortable({ id: `group-${groupIndex}` })
 
   const handleAdd = () => {
     if (!newTitle.trim()) return
-    const criteria = newCriteria.split('\n').map(s=>s.trim()).filter(Boolean)
+    const criteria = newCriteria.split('\n').map(s => s.trim()).filter(Boolean)
     onAddStory(groupIndex, {
       title: newTitle.trim(),
       epicId: newEpic || epics[0]?.id || '',
@@ -55,6 +65,7 @@ export const GroupColumn: React.FC<GroupColumnProps> = ({
     setNewCriteria('')
     setShowAddForm(false)
   }
+
   const handleRename = () => {
     if (editName.trim() && editName.trim() !== group.name) onRenameGroup(groupIndex, editName.trim())
     setEditingName(false)
@@ -62,6 +73,7 @@ export const GroupColumn: React.FC<GroupColumnProps> = ({
 
   const totalPoints = group.stories.reduce((s, st) => s + (st.points || 0), 0)
   const donePoints = group.stories.filter(s => s.done).reduce((s, st) => s + (st.points || 0), 0)
+  const progressPct = totalPoints > 0 ? Math.round((donePoints / totalPoints) * 100) : 0
 
   return (
     <div
@@ -71,7 +83,7 @@ export const GroupColumn: React.FC<GroupColumnProps> = ({
         maxWidth: 340,
         background: isOver ? 'var(--surface-alt)' : 'var(--surface)',
         border: `1px solid ${isOver || colDragging ? 'var(--amber)' : 'var(--grid-line)'}`,
-        clipPath: 'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)',
+        clipPath: 'polygon(0 0, calc(100% - var(--chamfer)) 0, 100% var(--chamfer), 100% 100%, 0 100%)',
         display: 'flex',
         flexDirection: 'column',
         flexShrink: 0,
@@ -83,37 +95,64 @@ export const GroupColumn: React.FC<GroupColumnProps> = ({
       <div style={{ padding: 'var(--card-padding)', borderBottom: '1px solid var(--grid-line)', background: 'var(--surface-alt)' }}>
         {isKanban ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-            <span {...colAttrs} {...colListeners} title="Drag to reorder column" style={{ cursor:'grab', fontSize:'0.62rem', color:'var(--fog)', padding:'2px 4px', border:'1px solid transparent', userSelect:'none' }}>⋮⋮</span>
+            <span {...colAttrs} {...colListeners} title="Drag to reorder column" style={{ cursor: 'grab', fontSize: '0.62rem', color: 'var(--fog)', padding: '2px 4px', border: '1px solid transparent', userSelect: 'none' }}>⋮⋮</span>
             {editingName ? (
-              <input autoFocus value={editName} onChange={e=>setEditName(e.target.value)} onBlur={handleRename} onKeyDown={e=>{if(e.key==='Enter') handleRename(); if(e.key==='Escape') setEditingName(false)}} style={{ flex:1, minWidth:120, fontFamily:"'Space Grotesk', sans-serif", fontWeight:600, fontSize:'0.9rem', padding:'2px 6px', border:'1px solid var(--grid-line)', background:'var(--paper)', color:'var(--ink)', outline:'none' }} />
+              <input
+                autoFocus
+                value={editName}
+                onChange={e => setEditName(e.target.value)}
+                onBlur={handleRename}
+                onKeyDown={e => { if (e.key === 'Enter') handleRename(); if (e.key === 'Escape') setEditingName(false) }}
+                style={{ flex: 1, minWidth: 120, fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: '0.9rem', padding: '2px 6px', border: '1px solid var(--grid-line)', background: 'var(--paper)', color: 'var(--ink)', outline: 'none' }}
+              />
             ) : (
-              <span onDoubleClick={()=>{setEditName(group.name); setEditingName(true)}} title="Double-click to rename" style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, color: 'var(--bright)', fontSize: '0.95rem', letterSpacing: '0.02em', cursor:'text', borderBottom:'1px dashed transparent' }}>{group.name}</span>
+              <span onDoubleClick={() => { setEditName(group.name); setEditingName(true) }} title="Double-click to rename" style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, color: 'var(--bright)', fontSize: '0.95rem', letterSpacing: '0.02em', cursor: 'text', borderBottom: '1px dashed transparent' }}>{group.name}</span>
             )}
             {group.wip_limit !== null && (
-              <span style={{
-                fontFamily: "'IBM Plex Mono', monospace", fontSize: '0.58rem',
-                background: group.stories.length > group.wip_limit! ? 'var(--coral)' : 'transparent',
-                color: group.stories.length > group.wip_limit! ? '#fff' : 'var(--fog)',
-                border: `1px solid ${group.stories.length > group.wip_limit! ? 'var(--coral)' : 'var(--grid-line)'}`,
-                padding: '1px 4px',
-              }}>WIP {group.wip_limit}</span>
+              <Chip
+                variant={wipExceeded ? 'coral' : 'outline'}
+                size="sm"
+                style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: '0.58rem' }}
+              >
+                WIP {group.wip_limit} · {group.stories.length}
+              </Chip>
             )}
-            <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: '0.62rem', color: 'var(--fog)' }}>{group.stories.length} · {donePoints}/{totalPoints} pts</span>
-            <button onClick={()=>onDeleteGroup(groupIndex)} title="Delete column" style={{ marginLeft:'auto', background:'var(--coral)', border:'none', color:'#fff', cursor:'pointer', fontSize:'0.65rem', fontWeight:600, padding:'2px 6px', borderRadius:'4px', opacity:0.9, transition:'all 0.2s ease' }} onMouseEnter={(e)=>{e.currentTarget.style.opacity='1'; e.currentTarget.style.transform='scale(1.05)'}} onMouseLeave={(e)=>{e.currentTarget.style.opacity='0.9'; e.currentTarget.style.transform='scale(1)'}}>×</button>
+            <Readout variant="status" size="xs">
+              {group.stories.length} · {donePoints}/{totalPoints} pts
+            </Readout>
+            <Button variant="danger" size="sm" onClick={() => onDeleteGroup(groupIndex)} style={{ marginLeft: 'auto', padding: '2px 6px', fontSize: '0.65rem' }}>
+              ×
+            </Button>
           </div>
         ) : (
           <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center' }}>
-            <span {...colAttrs} {...colListeners} title="Drag to reorder sprint" style={{ cursor:'grab', fontSize:'0.62rem', color:'var(--fog)', padding:'2px 4px', userSelect:'none' }}>⋮⋮</span>
-            <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: '1.9rem', lineHeight: 1, color: 'var(--bright)' }}>{String(group.number).padStart(2, '0')}</span>
+            <span {...colAttrs} {...colListeners} title="Drag to reorder sprint" style={{ cursor: 'grab', fontSize: '0.62rem', color: 'var(--fog)', padding: '2px 4px', userSelect: 'none' }}>⋮⋮</span>
+            <Readout variant="metric" size="lg" style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: '1.9rem', lineHeight: 1, color: 'var(--bright)' }}>
+              {String(group.number).padStart(2, '0')}
+            </Readout>
             <div style={{ flex: 1, minWidth: 0 }}>
               {editingName ? (
-                <input autoFocus value={editName} onChange={e=>setEditName(e.target.value)} onBlur={handleRename} onKeyDown={e=>{if(e.key==='Enter') handleRename(); if(e.key==='Escape') setEditingName(false)}} style={{ width:'100%', fontFamily:"'Space Grotesk', sans-serif", fontWeight:600, fontSize:'0.88rem', padding:'2px 6px', border:'1px solid var(--grid-line)', background:'var(--paper)', color:'var(--ink)', outline:'none' }} />
+                <input
+                  autoFocus
+                  value={editName}
+                  onChange={e => setEditName(e.target.value)}
+                  onBlur={handleRename}
+                  onKeyDown={e => { if (e.key === 'Enter') handleRename(); if (e.key === 'Escape') setEditingName(false) }}
+                  style={{ width: '100%', fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, fontSize: '0.88rem', padding: '2px 6px', border: '1px solid var(--grid-line)', background: 'var(--paper)', color: 'var(--ink)', outline: 'none' }}
+                />
               ) : (
-                <div onDoubleClick={()=>{setEditName(group.name); setEditingName(true)}} title="Double-click to rename" style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, color: 'var(--bright)', fontSize: '0.88rem', lineHeight: 1.1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', cursor:'text', borderBottom:'1px dashed transparent' }}>{group.name}</div>
+                <div onDoubleClick={() => { setEditName(group.name); setEditingName(true) }} title="Double-click to rename" style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 600, color: 'var(--bright)', fontSize: '0.88rem', lineHeight: 1.1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', cursor: 'text', borderBottom: '1px dashed transparent' }}>{group.name}</div>
               )}
-              <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: '0.58rem', color: 'var(--fog)', letterSpacing: '0.06em', display:'flex', gap:6, alignItems:'center' }}>
+              <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: '0.58rem', color: 'var(--fog)', letterSpacing: '0.06em', display: 'flex', gap: '0.5rem', alignItems: 'center', marginTop: '0.2rem' }}>
                 <span>{group.stories.length} STORIES · {donePoints}/{totalPoints} PTS</span>
-                <button onClick={()=>onDeleteGroup(groupIndex)} title="Delete sprint" style={{ background:'var(--coral)', border:'none', color:'#fff', cursor:'pointer', fontSize:'0.65rem', fontWeight:600, padding:'2px 6px', borderRadius:'4px', opacity:0.9, transition:'all 0.2s ease' }} onMouseEnter={(e)=>{e.currentTarget.style.opacity='1'; e.currentTarget.style.transform='scale(1.05)'}} onMouseLeave={(e)=>{e.currentTarget.style.opacity='0.9'; e.currentTarget.style.transform='scale(1)'}}>×</button>
+                {totalPoints > 0 && (
+                  <Readout variant={progressPct === 100 ? 'status' : 'metric'} size="xs" style={{ color: progressPct === 100 ? 'var(--green)' : 'var(--amber)' }}>
+                    {progressPct}% goal
+                  </Readout>
+                )}
+                <Button variant="danger" size="sm" onClick={() => onDeleteGroup(groupIndex)} style={{ padding: '2px 6px', fontSize: '0.65rem' }}>
+                  ×
+                </Button>
               </div>
             </div>
           </div>
@@ -121,12 +160,6 @@ export const GroupColumn: React.FC<GroupColumnProps> = ({
         {group.type === 'sprint' && group.goal && (
           <div style={{ fontSize: '0.72rem', color: 'var(--fog)', marginTop: '0.45rem', lineHeight: 1.4 }}>
             {group.goal}
-            {group.stories.length > 0 && (
-              <span style={{ marginLeft: '0.5rem', fontFamily: "'IBM Plex Mono', monospace", fontSize: '0.6rem',
-                color: donePoints === totalPoints && totalPoints > 0 ? 'var(--sage)' : 'var(--amber)' }}>
-                {Math.round((donePoints / (totalPoints || 1)) * 100)}% goal
-              </span>
-            )}
           </div>
         )}
       </div>
@@ -155,39 +188,68 @@ export const GroupColumn: React.FC<GroupColumnProps> = ({
               />
             )
           })}
-          {matchesSearch && group.stories.filter(s => matchesSearch(s, epics.find(e=>e.id===s.epic_id)?.name)).length === 0 && group.stories.length > 0 && (
-            <div style={{ fontFamily:"'IBM Plex Mono', monospace", fontSize:'0.58rem', color:'var(--fog)', textAlign:'center', padding:'0.6rem 0' }}>No matches in this column</div>
+          {matchesSearch && group.stories.filter(s => matchesSearch(s, epics.find(e => e.id === s.epic_id)?.name)).length === 0 && group.stories.length > 0 && (
+            <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: '0.58rem', color: 'var(--fog)', textAlign: 'center', padding: '0.6rem 0' }}>No matches in this column</div>
           )}
           {group.stories.length === 0 && (
-            <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: '0.62rem', color: isOver ? 'var(--amber)' : 'var(--fog)', textAlign: 'center', padding: '1.6rem 0', border: `1px dashed ${isOver ? 'var(--amber)' : 'var(--grid-line)'}`, background: isOver ? 'rgba(201,138,52,0.08)' : 'transparent' }}>{isOver ? 'DROP HERE — ' : ''}{isDoneColumn ? 'DONE — drag here' : 'NO STORIES — drop here'}</div>
+            <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: '0.62rem', color: isOver ? 'var(--amber)' : 'var(--fog)', textAlign: 'center', padding: '1.6rem 0', border: `1px dashed ${isOver ? 'var(--amber)' : 'var(--grid-line)'}`, background: isOver ? 'rgba(201,138,52,0.08)' : 'transparent' }}>
+              {isOver ? 'DROP HERE — ' : ''}{isDoneColumn ? 'DONE — drag here' : 'NO STORIES — drop here'}
+            </div>
           )}
         </div>
       </SortableContext>
 
       <div style={{ padding: 'var(--card-padding)', borderTop: '1px solid var(--grid-line)', background: 'var(--surface-alt)' }}>
         {showAddForm ? (
-          <div style={{ background: 'var(--paper)', border: '1px solid var(--grid-line)', clipPath: 'polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%)', padding: '0.6rem' }}>
-            <input placeholder="Title *" value={newTitle} onChange={e => setNewTitle(e.target.value)} autoFocus style={{ width: '100%', fontFamily: "'IBM Plex Sans', sans-serif", fontSize: '0.8rem', padding: '0.4rem', border: '1px solid var(--grid-line)', background: '#F4EFE2', color: 'var(--ink)', marginBottom: '0.35rem', outline: 'none' }} />
-            <textarea placeholder="Acceptance criteria — one per line" value={newCriteria} onChange={e=>setNewCriteria(e.target.value)} rows={3} style={{ width: '100%', fontFamily: "'IBM Plex Sans', sans-serif", fontSize: '0.76rem', padding: '0.4rem', border: '1px solid var(--grid-line)', background: '#F4EFE2', color: 'var(--ink)', marginBottom: '0.35rem', outline: 'none', resize:'vertical' }} />
-            <select value={newEpic} onChange={e => setNewEpic(e.target.value)} style={{ width: '100%', fontFamily: "'IBM Plex Mono', monospace", fontSize: '0.7rem', padding: '0.3rem', border: '1px solid var(--grid-line)', background: '#F4EFE2', marginBottom: '0.35rem', color: 'var(--ink)' }}>
-              {epics.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
-            </select>
+          <Panel variant="paper" chamfered={true} bordered={true} style={{ padding: '0.6rem' }}>
+            <Input
+              placeholder="Title *"
+              value={newTitle}
+              onChange={e => setNewTitle(e.target.value)}
+              autoFocus
+              size="sm"
+              style={{ marginBottom: '0.35rem' }}
+            />
+            <Textarea
+              placeholder="Acceptance criteria — one per line"
+              value={newCriteria}
+              onChange={e => setNewCriteria(e.target.value)}
+              rows={3}
+              size="sm"
+              style={{ marginBottom: '0.35rem' }}
+            />
+            <Select
+              options={epics.map(e => ({ value: e.id, label: e.name }))}
+              value={newEpic}
+              onChange={e => setNewEpic(e.target.value)}
+              size="sm"
+              style={{ marginBottom: '0.35rem' }}
+            />
             <div style={{ display: 'flex', gap: '0.35rem', marginBottom: '0.35rem' }}>
-              <select value={newPriority} onChange={e => setNewPriority(e.target.value)} style={{ flex: 1, fontFamily: "'IBM Plex Mono', monospace", fontSize: '0.7rem', padding: '0.3rem', border: '1px solid var(--grid-line)', background: '#F4EFE2', color: 'var(--ink)' }}>
-                <option>High</option><option>Medium</option><option>Low</option>
-              </select>
-              <select value={newPoints ?? ''} onChange={e => setNewPoints(e.target.value ? Number(e.target.value) : null)} style={{ flex: 1, fontFamily: "'IBM Plex Mono', monospace", fontSize: '0.7rem', padding: '0.3rem', border: '1px solid var(--grid-line)', background: '#F4EFE2', color: 'var(--ink)' }}>
-                <option value="">Points —</option>
-                <option value={1}>1</option><option value={2}>2</option><option value={3}>3</option><option value={5}>5</option><option value={8}>8</option>
-              </select>
+              <Select
+                options={['High', 'Medium', 'Low'].map(v => ({ value: v, label: v }))}
+                value={newPriority}
+                onChange={e => setNewPriority(e.target.value)}
+                size="sm"
+                style={{ flex: 1 }}
+              />
+              <Select
+                options={[{ value: '', label: 'Points —' }, { value: '1', label: '1' }, { value: '2', label: '2' }, { value: '3', label: '3' }, { value: '5', label: '5' }, { value: '8', label: '8' }]}
+                value={newPoints ?? ''}
+                onChange={e => setNewPoints(e.target.value ? Number(e.target.value) : null)}
+                size="sm"
+                style={{ flex: 1 }}
+              />
             </div>
             <div style={{ display: 'flex', gap: '0.4rem' }}>
-              <Button variant="primary" onClick={handleAdd} style={{ flex: 1, fontSize: '0.7rem', padding: '0.4em' }}>Add story</Button>
-              <Button variant="ghost" onClick={() => setShowAddForm(false)} style={{ flex: 1, fontSize: '0.7rem', padding: '0.4em' }}>Cancel</Button>
+              <Button variant="primary" onClick={handleAdd} size="sm" style={{ flex: 1 }}>Add story</Button>
+              <Button variant="ghost" onClick={() => setShowAddForm(false)} size="sm" style={{ flex: 1 }}>Cancel</Button>
             </div>
-          </div>
+          </Panel>
         ) : (
-          <button onClick={() => setShowAddForm(true)} style={{ width: '100%', fontFamily: "'IBM Plex Mono', monospace", fontSize: '0.65rem', letterSpacing: '0.06em', padding: '0.55rem', border: '1px dashed var(--grid-line)', background: 'transparent', color: 'var(--fog)', cursor: 'pointer' }}>+ ADD STORY</button>
+          <Button variant="ghost" size="sm" onClick={() => setShowAddForm(true)} fullWidth style={{ borderStyle: 'dashed', background: 'transparent', color: 'var(--fog)', fontFamily: "'IBM Plex Mono', monospace", fontSize: '0.65rem', letterSpacing: '0.06em' }}>
+            + ADD STORY
+          </Button>
         )}
       </div>
     </div>

@@ -1,14 +1,33 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light dark" />
     <title>Rune</title>
     <link rel="icon" type="image/png" href="/Rune_logo.png" />
     <link rel="apple-touch-icon" href="/Rune_logo.png" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <script>
+      // Apply the stored theme before first paint to avoid a flash.
+      (function () {
+        var root = document.documentElement
+        var theme = 'light'
+        try {
+          var stored = localStorage.getItem('rune-theme')
+          if (stored === 'dark' || stored === 'light') {
+            theme = stored
+          } else if (stored === 'system' || stored === 'auto' || !stored) {
+            theme = window.matchMedia('(prefers-color-scheme: dark)').matches
+              ? 'dark'
+              : 'light'
+          }
+        } catch (e) {
+          /* storage unavailable — keep light default */
+        }
+        root.setAttribute('data-theme', theme)
+        root.style.colorScheme = theme
+      })()
+    </script>
   </head>
   <body>
     <div id="root"></div>
