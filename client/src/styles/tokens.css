@@ -5,11 +5,12 @@
   color-scheme: light;
 
   /* ---- Nav ---- */
-  --nav: #0B2545;
-  --nav-2: #13315C;
-  --nav-text: #C9D4E5;
-  --nav-muted: #7F93B2;
-  --nav-active: rgba(255, 255, 255, 0.14);
+  --nav: #FFFFFF;
+  --nav-2: #EAEEF3;
+  --nav-text: #566275;
+  --nav-muted: #9AA8BF;
+  --nav-active: #E6EEF8;
+  --nav-active-text: #1D4E89;
 
   /* ---- Surfaces & Borders ---- */
   --bg: #F3F5F8;
@@ -112,6 +113,7 @@
   --nav-text: #B7C4DA;
   --nav-muted: #6E82A3;
   --nav-active: rgba(255, 255, 255, 0.14);
+  --nav-active-text: #FFFFFF;
 
   /* ---- Surfaces & Borders ---- */
   --bg: #0B1220;

@@ -25,7 +25,7 @@ const itemStyle = (active: boolean, collapsed: boolean): React.CSSProperties => 
   fontSize: 14,
   fontWeight: 500,
   textDecoration: 'none',
-  color: active ? '#FFFFFF' : 'var(--nav-text)',
+  color: active ? 'var(--nav-active-text)' : 'var(--nav-text)',
   background: active ? 'var(--nav-active)' : 'transparent',
   transition: 'background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease)',
 })
@@ -132,7 +132,7 @@ export const Sidebar: React.FC = () => {
         flexDirection: 'column',
         background: 'var(--nav)',
         color: 'var(--nav-text)',
-        borderRight: '1px solid rgba(255, 255, 255, 0.08)',
+        borderRight: '1px solid var(--border)',
         padding: '0 8px 16px',
         transition: 'width var(--dur) var(--ease)',
       }}
@@ -149,7 +149,7 @@ export const Sidebar: React.FC = () => {
       >
         <img src={logoSrc} alt="" width={28} height={28} style={{ width: 28, height: 28, objectFit: 'contain', display: 'block' }} />
         {!collapsed && (
-          <span style={{ fontFamily: 'var(--font-sans)', fontWeight: 600, fontSize: 16, color: '#FFFFFF', letterSpacing: '-0.01em' }}>
+          <span style={{ fontFamily: 'var(--font-sans)', fontWeight: 600, fontSize: 16, color: 'var(--ink)', letterSpacing: '-0.01em' }}>
             Rune
           </span>
         )}
@@ -186,7 +186,7 @@ export const Sidebar: React.FC = () => {
         </div>
       </div>
 
-      <div style={{ marginTop: 'auto', borderTop: '1px solid rgba(255, 255, 255, 0.08)', paddingTop: 10 }}>
+      <div style={{ marginTop: 'auto', borderTop: '1px solid var(--border)', paddingTop: 10 }}>
         <button
           type="button"
           onClick={toggleCollapsed}
