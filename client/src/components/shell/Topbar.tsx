@@ -1,6 +1,6 @@
 import React from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Search, Undo2, Redo2, Download, Sun, Moon, Monitor, Check, ChevronRight } from 'lucide-react'
+import { Search, Undo2, Redo2, Download, Sun, Moon, ChevronRight } from 'lucide-react'
 import { IconButton, Menu, Kbd } from '@/components/primitives'
 import { useTheme } from '@/context/ThemeContext'
 import { usePlan } from '@/context/PlanContext'
@@ -21,7 +21,7 @@ interface TopbarProps {
 export const Topbar: React.FC<TopbarProps> = ({ onOpenSearch }) => {
   const location = useLocation()
   const { plan } = usePlan()
-  const { theme, setTheme } = useTheme()
+  const { resolvedTheme, setTheme } = useTheme()
   const actions = useBoardActions()
 
   const baseTitle = pageTitles[location.pathname] ?? 'Rune'
@@ -30,9 +30,9 @@ export const Topbar: React.FC<TopbarProps> = ({ onOpenSearch }) => {
   const planName =
     location.pathname === '/board' && plan.project_name ? plan.project_name.replace(/\*\*/g, '').trim() : null
 
-  const themeIcon =
-    theme === 'dark' ? <Moon size={16} strokeWidth={1.7} /> : theme === 'light' ? <Sun size={16} strokeWidth={1.7} /> : <Monitor size={16} strokeWidth={1.7} />
-  const themeLabel = theme === 'dark' ? 'Dark' : theme === 'light' ? 'Light' : 'System'
+  const toggleTheme = () => {
+    setTheme(resolvedTheme === 'light' ? 'dark' : 'light')
+  }
 
   const crumb = (label: string, isLast: boolean, to?: string) => (
     <React.Fragment key={`${label}-${to ?? 'current'}`}>
@@ -159,43 +159,27 @@ export const Topbar: React.FC<TopbarProps> = ({ onOpenSearch }) => {
         </div>
       )}
 
-      <Menu
-        label="Theme"
-        trigger={
-          <IconButton size="sm" variant="ghost" aria-label={`Theme: ${themeLabel}`}>
-            {themeIcon}
-          </IconButton>
-        }
-        items={[
-          {
-            id: 'light',
-            label: (
-              <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-                Light {theme === 'light' && <Check size={15} strokeWidth={2} />}
-              </span>
-            ),
-            onSelect: () => setTheme('light'),
-          },
-          {
-            id: 'dark',
-            label: (
-              <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-                Dark {theme === 'dark' && <Check size={15} strokeWidth={2} />}
-              </span>
-            ),
-            onSelect: () => setTheme('dark'),
-          },
-          {
-            id: 'system',
-            label: (
-              <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-                System {theme === 'system' && <Check size={15} strokeWidth={2} />}
-              </span>
-            ),
-            onSelect: () => setTheme('system'),
-          },
-        ]}
-      />
+      <button
+        type="button"
+        onClick={toggleTheme}
+        aria-label={`Switch to ${resolvedTheme === 'light' ? 'dark' : 'light'} mode`}
+        style={{
+          width: 36,
+          height: 36,
+          borderRadius: 8,
+          border: '1px solid var(--border)',
+          background: 'var(--surface)',
+          color: 'var(--ink)',
+          cursor: 'pointer',
+          display: 'grid',
+          placeItems: 'center',
+          transition: 'transform 0.35s',
+        }}
+        onMouseEnter={(e) => { e.currentTarget.style.transform = 'rotate(180deg)' }}
+        onMouseLeave={(e) => { e.currentTarget.style.transform = 'rotate(0deg)' }}
+      >
+        {resolvedTheme === 'light' ? <Moon size={18} strokeWidth={1.7} /> : <Sun size={18} strokeWidth={1.7} />}
+      </button>
     </header>
   )
 }
