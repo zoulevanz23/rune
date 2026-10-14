@@ -10,6 +10,11 @@ _alt_path = Path(__file__).resolve().parent.parent / ".env"
 class Settings(BaseSettings):
     GOOGLE_API_KEY: str = ""
     ALLOWED_ORIGIN: str = "http://localhost:5173"
+    # gemini-3.8-flash is current per the API (2.0-flash returns 404 NOT_FOUND).
+    GEMINI_MODEL: str = "gemini-3.8-flash"
+    # Total budget for one generation call (incl. retries). Frontend uses the same value.
+    GENERATION_TIMEOUT_SECONDS: int = 120
+    GEMINI_MAX_OUTPUT_TOKENS: int = 8192
 
     model_config = SettingsConfigDict(
         env_file=[str(_env_path), str(_alt_path), ".env"],

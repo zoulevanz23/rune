@@ -16,12 +16,14 @@ const ThemeContext = createContext<ThemeContextType | null>(null)
 const THEME_STORAGE_KEY = 'rune-theme'
 const DENSITY_STORAGE_KEY = 'rune-density'
 
+// Light is the app default. Only honour an explicit stored choice;
+// a missing key (first visit) falls back to 'light', not the OS setting.
 const readStoredTheme = (): Theme => {
-  if (typeof window === 'undefined') return 'system'
+  if (typeof window === 'undefined') return 'light'
   const stored = localStorage.getItem(THEME_STORAGE_KEY)
   if (stored === 'light' || stored === 'dark' || stored === 'system') return stored
-  if (stored === 'auto') return 'system'
-  return 'system'
+  if (stored === 'auto') return 'light'
+  return 'light'
 }
 
 const prefersDark = () =>
@@ -35,9 +37,8 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     }
     return 'comfortable'
   })
-  const [resolvedTheme, setResolvedTheme] = useState<'dark' | 'light'>(() =>
-    prefersDark() ? 'dark' : 'light'
-  )
+  // Default to light on first paint; corrected in the effect below if needed.
+  const [resolvedTheme, setResolvedTheme] = useState<'dark' | 'light'>('light')
 
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme)
