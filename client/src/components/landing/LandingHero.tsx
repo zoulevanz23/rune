@@ -30,7 +30,7 @@ export const LandingHero: React.FC = () => {
       return
     }
 
-    let timeout: NodeJS.Timeout
+    let timeout: ReturnType<typeof setTimeout>
     const runDemo = async () => {
       // Reset
       setText('')

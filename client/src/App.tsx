@@ -9,6 +9,7 @@ const IntakePage = lazy(() => import('@/pages/IntakePage').then(m => ({ default:
 const BoardPage = lazy(() => import('@/pages/BoardPage').then(m => ({ default: m.BoardPage })))
 const MyPlansPage = lazy(() => import('@/pages/MyPlansPage').then(m => ({ default: m.MyPlansPage })))
 const StyleguidePage = lazy(() => import('@/pages/StyleguidePage').then(m => ({ default: m.StyleguidePage })))
+const SharePage = lazy(() => import('@/pages/SharePage').then(m => ({ default: m.SharePage })))
 const Shell = lazy(() => import('@/components/shell').then(m => ({ default: m.Shell })))
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
@@ -33,6 +34,7 @@ const AppContent: React.FC = () => {
     <Suspense fallback={<RouteFallback />}>
       <Routes>
         <Route path="/" element={<LandingPage apiBaseUrl={API_BASE_URL} />} />
+        <Route path="/share/:shareId" element={<SharePage apiBaseUrl={API_BASE_URL} />} />
         <Route element={<Shell />}>
           <Route path="/new" element={<IntakePage apiBaseUrl={API_BASE_URL} />} />
           <Route path="/board" element={<BoardPage apiBaseUrl={API_BASE_URL} />} />

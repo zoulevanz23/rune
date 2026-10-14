@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
-import { Home, Plus, FolderOpen, LayoutGrid, Layers, CalendarRange, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
+import { Home, Plus, FolderOpen, LayoutGrid, Layers, CalendarRange, PanelLeftClose, PanelLeftOpen, GitBranch, BarChart3, TrendingUp, Table2 } from 'lucide-react'
 import { usePlan } from '@/context/PlanContext'
 import logoSrc from '@/design/runnie_logo.png'
 
@@ -110,12 +110,16 @@ export const Sidebar: React.FC = () => {
 
   const currentPlan: NavItem[] = [
     { to: '/board', label: 'Board', icon: <LayoutGrid size={18} strokeWidth={1.7} />, matchExact: true },
+    { to: '/board?view=table', label: 'Table', icon: <Table2 size={18} strokeWidth={1.7} /> },
     { to: '/board?view=epics', label: 'Epics', icon: <Layers size={18} strokeWidth={1.7} /> },
     ...(isScrum ? [{ to: '/board?view=timeline', label: 'Timeline', icon: <CalendarRange size={18} strokeWidth={1.7} /> } as NavItem] : []),
+    { to: '/board?view=graph', label: 'Dependencies', icon: <GitBranch size={18} strokeWidth={1.7} /> },
+    { to: '/board?view=analytics', label: 'Analytics', icon: <BarChart3 size={18} strokeWidth={1.7} /> },
+    { to: '/board?view=progress', label: 'Progress', icon: <TrendingUp size={18} strokeWidth={1.7} /> },
   ]
 
-  const boardActive =
-    location.pathname === '/board' && (location.search.includes('view=epics') || location.search.includes('view=timeline'))
+  const activeView = new URLSearchParams(location.search).get('view') ?? ''
+  const boardActive = location.pathname === '/board' && activeView !== ''
 
   return (
     <nav
@@ -161,12 +165,9 @@ export const Sidebar: React.FC = () => {
           {!collapsed && <div style={groupLabel}>Current plan</div>}
           <ul style={{ listStyle: 'none', margin: 0, padding: collapsed ? '0' : '0 8px', display: 'flex', flexDirection: 'column', gap: 2 }}>
             {currentPlan.map(item => {
-              const active =
-                item.matchExact
-                  ? location.pathname === item.to && !boardActive
-                  : item.to.includes('view=epics')
-                    ? location.search.includes('view=epics')
-                    : location.search.includes('view=timeline')
+const active = item.matchExact
+                ? location.pathname === item.to && !boardActive
+                : activeView === new URLSearchParams(item.to.split('?')[1] ?? '').get('view')
               return (
                 <li key={item.to}>
                   <NavLink

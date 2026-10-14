@@ -9,16 +9,17 @@ interface StoryCardProps {
   story: Story
   epicName?: string
   epicIndex: number
-  onEdit: (field: string, value: any) => void
-  onDelete: () => void
-  onCyclePoints: () => void
-  onToggleDone: () => void
+  onEdit?: (field: string, value: any) => void
+  onDelete?: () => void
+  onCyclePoints?: () => void
+  onToggleDone?: () => void
   onMoveToDone?: () => void
   onOpen?: () => void
   isDoneColumn?: boolean
   selected?: boolean
   onToggleSelect?: () => void
   dimmed?: boolean
+  readOnly?: boolean
 }
 
 const getCrit = (criteria: any): string[] => {
@@ -31,7 +32,7 @@ const getCrit = (criteria: any): string[] => {
 }
 
 export const StoryCard: React.FC<StoryCardProps> = ({
-  story, epicName, onEdit, onDelete, onCyclePoints, onToggleDone, onMoveToDone, onOpen, isDoneColumn, selected, onToggleSelect, dimmed,
+  story, epicName, onEdit, onDelete, onCyclePoints, onToggleDone, onMoveToDone, onOpen, isDoneColumn, selected, onToggleSelect, dimmed, readOnly = false,
 }) => {
   const [editing, setEditing] = useState(false)
   const [editTitle, setEditTitle] = useState(story.title)
@@ -39,13 +40,13 @@ export const StoryCard: React.FC<StoryCardProps> = ({
   const [hover, setHover] = useState(false)
   const critList = getCrit(story.criteria)
 
-  const { setNodeRef, attributes, listeners, isDragging, transform, transition } = useSortable({ id: story.id, disabled: editing })
+  const { setNodeRef, attributes, listeners, isDragging, transform, transition } = useSortable({ id: story.id, disabled: editing || readOnly })
 
   const stopDrag = (e: React.SyntheticEvent) => { e.stopPropagation() }
   const handleSave = () => {
-    if (editTitle.trim()) onEdit('title', editTitle.trim())
+    if (editTitle.trim()) onEdit?.('title', editTitle.trim())
     const crits = editCriteria.split('\n').map(s => s.trim()).filter(Boolean)
-    onEdit('criteria', crits.length ? crits : story.criteria)
+    onEdit?.('criteria', crits.length ? crits : story.criteria)
     setEditing(false)
   }
 
@@ -83,26 +84,32 @@ export const StoryCard: React.FC<StoryCardProps> = ({
         </span>
         <span className="tnum" style={{ fontSize: 12, fontWeight: 600, color: 'var(--ink-mute)', letterSpacing: '0.02em' }}>{story.id}</span>
         <span style={{ marginLeft: 'auto', display: 'inline-flex', gap: 2 }}>
-          <IconButton size="sm" variant="ghost" aria-label={`Edit ${story.id}`} onClick={e => { e.stopPropagation(); startEdit() }} onPointerDown={stopDrag}>
-            <Pencil size={14} strokeWidth={1.7} />
-          </IconButton>
+          {!readOnly && (
+            <IconButton size="sm" variant="ghost" aria-label={`Edit ${story.id}`} onClick={e => { e.stopPropagation(); startEdit() }} onPointerDown={stopDrag}>
+              <Pencil size={14} strokeWidth={1.7} />
+            </IconButton>
+          )}
           <IconButton size="sm" variant="ghost" aria-label={`Open ${story.id} details`} onClick={e => { e.stopPropagation(); onOpen?.() }} onPointerDown={stopDrag}>
             <Maximize2 size={14} strokeWidth={1.7} />
           </IconButton>
-          <IconButton
-            size="sm"
-            variant="ghost"
-            aria-label={story.done ? `Mark ${story.id} not done` : `Mark ${story.id} done`}
-            aria-pressed={story.done}
-            onClick={e => { e.stopPropagation(); onToggleDone() }}
-            onPointerDown={stopDrag}
-            style={story.done ? { color: 'var(--success)', background: 'var(--success-soft)' } : undefined}
-          >
-            <Check size={15} strokeWidth={2} />
-          </IconButton>
-          <IconButton size="sm" variant="ghost" aria-label={`Delete ${story.id}`} onClick={e => { e.stopPropagation(); onDelete() }} onPointerDown={stopDrag} style={{ color: 'var(--muted)' }}>
-            <Trash2 size={14} strokeWidth={1.7} />
-          </IconButton>
+          {!readOnly && (
+            <>
+              <IconButton
+                size="sm"
+                variant="ghost"
+                aria-label={story.done ? `Mark ${story.id} not done` : `Mark ${story.id} done`}
+                aria-pressed={story.done}
+                onClick={e => { e.stopPropagation(); onToggleDone?.() }}
+                onPointerDown={stopDrag}
+                style={story.done ? { color: 'var(--success)', background: 'var(--success-soft)' } : undefined}
+              >
+                <Check size={15} strokeWidth={2} />
+              </IconButton>
+              <IconButton size="sm" variant="ghost" aria-label={`Delete ${story.id}`} onClick={e => { e.stopPropagation(); onDelete?.() }} onPointerDown={stopDrag} style={{ color: 'var(--muted)' }}>
+                <Trash2 size={14} strokeWidth={1.7} />
+              </IconButton>
+            </>
+          )}
         </span>
       </div>
 
@@ -116,7 +123,7 @@ export const StoryCard: React.FC<StoryCardProps> = ({
           </div>
         </div>
       ) : (
-        <div onDoubleClick={startEdit} style={{ cursor: 'text' }}>
+        <div onDoubleClick={readOnly ? undefined : startEdit} style={{ cursor: readOnly ? 'default' : 'text' }}>
           <div style={{ fontWeight: 600, fontSize: 14, lineHeight: 1.4, marginBottom: 6, textDecoration: story.done ? 'line-through' : 'none', color: story.done ? 'var(--muted)' : 'var(--ink)' }}>
             {story.title}
           </div>
@@ -148,30 +155,44 @@ export const StoryCard: React.FC<StoryCardProps> = ({
         </Chip>
         {story.priority && <Chip variant="neutral" size="xs">{story.priority}</Chip>}
         {story.done && <Chip variant="success" size="xs">Done</Chip>}
-        <button
-          type="button"
-          onClick={e => { e.stopPropagation(); onCyclePoints() }}
-          onPointerDown={stopDrag}
-          aria-label={`Story points: ${story.points ?? 'none'}. Change points`}
-          style={{
-            marginLeft: 'auto',
-            height: 18,
-            padding: '0 6px',
-            fontFamily: 'var(--font-sans)',
-            fontSize: 11,
-            fontWeight: 600,
-            fontVariantNumeric: 'tabular-nums',
-            color: story.points ? 'var(--ink)' : 'var(--ink-mute)',
-            background: 'var(--surface-2)',
-            border: '1px solid var(--border)',
-            borderRadius: 'var(--radius-sm)',
-            cursor: 'pointer',
-            lineHeight: 1,
-          }}
-        >
-          {story.points ? `${story.points} pts` : 'pts —'}
-        </button>
-        {!isDoneColumn && onMoveToDone && (
+        {readOnly ? (
+          <span
+            className="tnum"
+            style={{
+              marginLeft: 'auto',
+              fontSize: 11,
+              fontWeight: 600,
+              color: story.points ? 'var(--ink)' : 'var(--ink-mute)',
+            }}
+          >
+            {story.points ? `${story.points} pts` : 'pts —'}
+          </span>
+        ) : (
+          <button
+            type="button"
+            onClick={e => { e.stopPropagation(); onCyclePoints?.() }}
+            onPointerDown={stopDrag}
+            aria-label={`Story points: ${story.points ?? 'none'}. Change points`}
+            style={{
+              marginLeft: 'auto',
+              height: 18,
+              padding: '0 6px',
+              fontFamily: 'var(--font-sans)',
+              fontSize: 11,
+              fontWeight: 600,
+              fontVariantNumeric: 'tabular-nums',
+              color: story.points ? 'var(--ink)' : 'var(--ink-mute)',
+              background: 'var(--surface-2)',
+              border: '1px solid var(--border)',
+              borderRadius: 'var(--radius-sm)',
+              cursor: 'pointer',
+              lineHeight: 1,
+            }}
+          >
+            {story.points ? `${story.points} pts` : 'pts —'}
+          </button>
+        )}
+        {!readOnly && !isDoneColumn && onMoveToDone && (
           <IconButton size="sm" variant="ghost" aria-label="Move to Done" tooltip="Move to Done" onClick={e => { e.stopPropagation(); onMoveToDone() }} onPointerDown={stopDrag}>
             <ArrowRight size={14} strokeWidth={1.7} />
           </IconButton>

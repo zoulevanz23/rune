@@ -8,10 +8,10 @@ export const landingNav = [
 export const hero = {
   title: 'Turn a rough idea into a sprint plan',
   subtitle:
-    'Rune reads your description and drafts epics, user stories and a board, in Scrum or Kanban. Edit, reorder, export and refine in plain language.',
+    'Rune reads your description and drafts epics, user stories and a board. Refine it with AI, track progress, map dependencies, and share a read-only link with your team.',
   primaryCta: 'Start drafting, it\'s free',
   secondaryCta: 'See how it works',
-  facts: ['No sign-up', 'Scrum and Kanban', 'Saved in your browser'],
+  facts: ['No sign-up', '10+ methodologies', 'AI refine actions', 'Analytics & progress', 'Shareable links'],
   demoNote: 'A pet-care app where owners book dog walkers, follow the walk live on a map, and pay in the app. Needs reviews and push alerts.',
 }
 
@@ -22,56 +22,64 @@ export const howItWorks = {
     {
       n: 1,
       title: 'Describe the app',
-      desc: 'Paste a rough paragraph in plain language. Rune needs nothing else.',
+      desc: 'Paste a rough paragraph in plain language. Add optional context — team size, deadline, tech stack — for a sharper plan.',
     },
     {
       n: 2,
       title: 'Get epics and stories back',
-      desc: 'Epics come with risks and a definition of done. Stories carry criteria, points and dependencies, returned as validated JSON, not prose.',
+      desc: 'Epics come with risks and a definition of done. Stories carry criteria, points and dependencies, returned as validated JSON rather than prose.',
     },
     {
       n: 3,
       title: 'Work it as a board',
-      desc: 'View it as a sprint plan or a Kanban flow. Drag to reorder, edit in place, export to Markdown or CSV.',
+      desc: 'View it as a board, table, dependency graph or timeline. Drag to reorder, refine with AI, and share a read-only link.',
     },
   ],
 }
 
 export const methodologies = {
-  title: 'One plan, two ways to run it',
-  subtitle: 'Pick the methodology that fits your team. The board language stays the same.',
-  scrum: {
-    title: 'Scrum',
-    desc: 'Numbered, sequential sprints. The deepest mode — sprint goals, timeline strip, velocity and scope controls.',
-  },
-  kanban: {
-    title: 'Kanban',
-    desc: 'Continuous flow, pull-based system. Focus on limiting work in progress.',
-  },
+  title: 'One plan, many ways to run it',
+  subtitle: 'Pick the methodology that fits your team, or let Rune choose from the description. The board language stays the same.',
+  items: [
+    { name: 'Scrum', desc: 'Numbered sprints with goals and velocity' },
+    { name: 'Kanban', desc: 'Continuous flow with WIP limits' },
+    { name: 'Scrumban', desc: 'Sprints with pull-based WIP limits' },
+    { name: 'Shape Up', desc: 'Fixed cycles, variable scope' },
+    { name: 'Story Mapping', desc: 'Organised by the user journey' },
+    { name: 'MoSCoW', desc: 'Must / Should / Could / Won\'t have' },
+    { name: 'Lean Canvas', desc: 'Problem and solution driven' },
+    { name: 'Design Sprint', desc: 'A five-day prototype cycle' },
+    { name: 'OKR-based', desc: 'Planned around objectives and key results' },
+    { name: 'Feature-based', desc: 'Organised by feature area' },
+  ],
 }
 
 export const capabilities = {
   title: 'A living workspace, not a one-shot export',
   items: [
     {
-      title: 'Edit',
-      desc: 'Click any card to rewrite it in place. Titles, criteria and points update instantly.',
+      title: 'AI refine actions',
+      desc: 'One-click transformations: add missing stories, split oversized ones, re-prioritise, estimate unestimated work, wire up dependencies, and sharpen acceptance criteria.',
     },
     {
-      title: 'Reorder',
-      desc: 'Drag stories between sprints or columns. A soft warning appears when a Kanban column is over its WIP limit, and it never blocks the move.',
+      title: 'Dependency graph',
+      desc: 'See story dependencies as a graph so blockers and critical paths are obvious before they bite.',
     },
     {
-      title: 'Export',
-      desc: 'Copy as Markdown for docs, or download a Jira-ready CSV. PDF is there too.',
+      title: 'Analytics and progress',
+      desc: 'Sprint burndown, epic completion, priority distribution and overall progress by points or story count.',
     },
     {
-      title: 'Refine',
-      desc: 'Ask for changes in plain language, like "make sprint 2 about onboarding". One-step undo included.',
+      title: 'Shareable links',
+      desc: 'Generate a read-only link for stakeholders. No account needed for whoever opens it.',
     },
     {
-      title: 'Save',
-      desc: 'Plans stay in your browser with IndexedDB. No account and no backend storage.',
+      title: 'Auto-saved',
+      desc: 'Every edit persists automatically, so a refresh never costs you progress. Undo and redo included.',
+    },
+    {
+      title: 'Export anywhere',
+      desc: 'Copy as Markdown for docs, download a Jira-ready CSV, or export a PDF for stakeholder reviews.',
     },
   ],
 }
@@ -81,11 +89,15 @@ export const faq = {
   items: [
     {
       q: 'What makes Rune different from ChatGPT or Claude?',
-      a: 'Rune is built for agile planning. It returns structured, validated JSON that maps straight onto a drag-and-drop board with sprints and WIP limits. You refine the plan on the board itself, with undo.',
+      a: 'Rune is built for agile planning. It returns structured, validated JSON that maps straight onto a drag-and-drop board with sprints, WIP limits and dependency tracking, then lets you refine it with AI without leaving the board.',
     },
     {
       q: 'Do I need an account to use Rune?',
-      a: 'No. Plans are saved in your browser, so you can come back and pick up where you left off.',
+      a: 'No. Plans are saved in your browser, so you can close the tab and pick up where you left off.',
+    },
+    {
+      q: 'Will my progress survive a refresh?',
+      a: 'Yes. Every change is auto-saved to your browser within a second, so marking stories done or dragging them around is never lost.',
     },
     {
       q: 'Can I import the CSV into Jira or Linear?',
@@ -93,11 +105,15 @@ export const faq = {
     },
     {
       q: 'How does the AI generation work?',
-      a: 'Rune sends your description to an AI model and asks for a strict JSON structure. The result is validated before it becomes a board.',
+      a: 'Rune asks a model for a strict JSON structure describing your epics and stories. The result is validated and repaired before it becomes a board, so malformed output is caught before you ever see it.',
     },
     {
       q: 'Is my data sent to the AI?',
-      a: 'Only the description you write and your refine requests are sent to generate and update the plan. Saved plans stay in your browser.',
+      a: 'Only the description you write and your refine requests are sent, to generate and update the plan. Saved plans stay in your browser.',
+    },
+    {
+      q: 'Can I share a plan with colleagues?',
+      a: 'Yes. Use Share plan in the plan menu to generate a read-only link. Anyone with the link can view the board without an account.',
     },
     {
       q: 'Can I self-host Rune?',

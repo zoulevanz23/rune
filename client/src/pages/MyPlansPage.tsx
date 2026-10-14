@@ -2,7 +2,7 @@ import React, { useEffect, useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { FolderOpen, LayoutGrid, List, Search, SearchX, Trash2 } from 'lucide-react'
 import { usePlansRepository } from '@/hooks/usePlansRepository'
-import { Panel, Button, Input, Chip, Progress, IconButton, Tabs, Select, EmptyState } from '@/components/primitives'
+import { Panel, Button, Input, Chip, Progress, IconButton, Tabs, Select, EmptyState, useToast } from '@/components/primitives'
 import type { Tab } from '@/components/primitives'
 import { Plan } from '@/types/plan'
 
@@ -17,6 +17,7 @@ interface SavedPlan {
 export const MyPlansPage: React.FC = () => {
   const { list, load, remove } = usePlansRepository()
   const navigate = useNavigate()
+  const { show } = useToast()
   const [plans, setPlans] = useState<SavedPlan[]>([])
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [searchQuery, setSearchQuery] = useState('')
@@ -45,7 +46,13 @@ export const MyPlansPage: React.FC = () => {
 
   const handleOpen = async (id: string) => {
     const plan = await load(id)
-    if (plan) { navigate('/board'); window.dispatchEvent(new CustomEvent('load-plan', { detail: plan })) }
+    if (!plan) {
+      show('Could not open that plan', 'error')
+      return
+    }
+    // Pass the plan through router state: BoardPage is not mounted yet at this
+    // point, so dispatching an event here would be missed (blank board).
+    navigate('/board', { state: { plan } })
   }
 
   const handleDelete = async (id: string) => {

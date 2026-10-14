@@ -1,13 +1,17 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { DndContext, DragEndEvent, DragStartEvent, DragOverlay, closestCorners } from '@dnd-kit/core'
 import { SortableContext, horizontalListSortingStrategy } from '@dnd-kit/sortable'
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams, useLocation } from 'react-router-dom'
 import { usePlan } from '@/context/PlanContext'
 import { useRefinePlan } from '@/hooks/useRefinePlan'
 import { usePlansRepository } from '@/hooks/usePlansRepository'
+import { useSharePlan } from '@/hooks/useSharePlan'
 import {
+  Analytics,
+  DependencyGraph,
   EpicLegend,
   GroupColumn,
+  ProgressTracking,
   RefineBar,
   ShortcutsModal,
   StoryDrawer,
@@ -31,15 +35,16 @@ import {
   Tabs,
   useToast,
 } from '@/components/primitives'
-import { Story } from '@/types/plan'
-import { Clock, LayoutGrid, Layers, MoreHorizontal, Plus, Search, Table2, Trash2, X } from 'lucide-react'
+import { Plan, Story } from '@/types/plan'
+import { Clock, LayoutGrid, Layers, MoreHorizontal, Plus, Search, Table2, Trash2, X, Share2, GitBranch, BarChart3, TrendingUp } from 'lucide-react'
 
-const VIEWS = ['board', 'table', 'timeline'] as const
+const VIEWS = ['board', 'table', 'timeline', 'graph', 'analytics', 'progress'] as const
 type View = (typeof VIEWS)[number]
 
 export const BoardPage: React.FC<{ apiBaseUrl: string }> = ({ apiBaseUrl }) => {
   const { plan, dispatch, state } = usePlan()
-  const { refine, loading: refining } = useRefinePlan(apiBaseUrl)
+  const { refine, refineAction, loading: refining } = useRefinePlan(apiBaseUrl)
+  const { share, loading: sharing } = useSharePlan(apiBaseUrl)
   const { save, remove: removePlan } = usePlansRepository()
   const { show } = useToast()
   const [searchParams, setSearchParams] = useSearchParams()
@@ -78,6 +83,32 @@ export const BoardPage: React.FC<{ apiBaseUrl: string }> = ({ apiBaseUrl }) => {
   useEffect(() => {
     setNameDraft((plan.project_name || '').replace(/\*\*/g, '').trim())
   }, [plan.project_name])
+
+  const location = useLocation()
+
+  // My plans navigates here with the plan in router state.
+  useEffect(() => {
+    const incoming = (location.state as { plan?: Plan } | null)?.plan
+    if (!incoming) return
+    dispatch({ type: 'SET_PLAN', payload: incoming })
+    lastSavedRef.current = incoming
+    // Clear the state so a refresh does not re-apply a stale plan.
+    window.history.replaceState({}, '')
+  }, [location.state, dispatch])
+
+  // Persist progress/edits so a refresh never loses work.
+  useEffect(() => {
+    if (!plan.groups.length && !plan.epics.length) return
+    if (lastSavedRef.current === plan) return
+    const t = setTimeout(() => {
+      save(plan)
+        .then(() => {
+          lastSavedRef.current = plan
+        })
+        .catch(() => show('Auto-save failed', 'error'))
+    }, 800)
+    return () => clearTimeout(t)
+  }, [plan, save, show])
 
   const doneColumnIndex = plan.groups.findIndex(g => g.type === 'column' && g.name === 'Done')
   const isGroupDrag = !!activeId?.startsWith('group-')
@@ -210,6 +241,33 @@ export const BoardPage: React.FC<{ apiBaseUrl: string }> = ({ apiBaseUrl }) => {
     },
     [plan, refine, dispatch, save, show]
   )
+
+  const handleRefineAction = useCallback(
+    async (action: string) => {
+      const updated = await refineAction(plan, action)
+      if (updated) {
+        dispatch({ type: 'SET_PLAN', payload: updated })
+        save(updated)
+          .then(() => {
+            lastSavedRef.current = updated
+          })
+          .catch(() => show('Auto-save failed', 'error'))
+        show('Plan updated', 'success')
+      }
+    },
+    [plan, refineAction, dispatch, save, show]
+  )
+
+  const handleShare = useCallback(async () => {
+    const url = await share(plan)
+    if (!url) return
+    try {
+      await navigator.clipboard.writeText(url)
+      show('Share link copied to clipboard', 'success')
+    } catch {
+      show(url, 'info')
+    }
+  }, [plan, share, show])
 
   const handleUndo = useCallback(() => dispatch({ type: 'UNDO' }), [dispatch])
   const handleRedo = useCallback(() => dispatch({ type: 'REDO' }), [dispatch])
@@ -547,6 +605,7 @@ export const BoardPage: React.FC<{ apiBaseUrl: string }> = ({ apiBaseUrl }) => {
             }
             items={[
               { id: 'save', label: 'Save plan', shortcut: '⌘S', onSelect: handleSave },
+              { id: 'share', label: 'Share plan', icon: <Share2 size={15} strokeWidth={1.7} />, onSelect: handleShare },
               { id: 'shortcuts', label: 'Keyboard shortcuts', shortcut: '?', onSelect: () => setShowShortcuts(true) },
               {
                 id: 'delete',
@@ -575,7 +634,7 @@ export const BoardPage: React.FC<{ apiBaseUrl: string }> = ({ apiBaseUrl }) => {
         </div>
 
         {/* ---- Refine ---- */}
-        <RefineBar onRefine={handleRefine} loading={refining} />
+        <RefineBar onRefine={handleRefine} onRefineAction={handleRefineAction} loading={refining} />
 
         {/* ---- Views ---- */}
         <Tabs
@@ -583,6 +642,9 @@ export const BoardPage: React.FC<{ apiBaseUrl: string }> = ({ apiBaseUrl }) => {
             { id: 'board', label: 'Board', icon: <LayoutGrid size={15} strokeWidth={1.7} /> },
             { id: 'table', label: 'Table', icon: <Table2 size={15} strokeWidth={1.7} /> },
             { id: 'timeline', label: 'Timeline', icon: <Clock size={15} strokeWidth={1.7} /> },
+            { id: 'graph', label: 'Dependencies', icon: <GitBranch size={15} strokeWidth={1.7} /> },
+            { id: 'analytics', label: 'Analytics', icon: <BarChart3 size={15} strokeWidth={1.7} /> },
+            { id: 'progress', label: 'Progress', icon: <TrendingUp size={15} strokeWidth={1.7} /> },
           ]}
           activeTab={view}
           onChange={id => setView(id as View)}
@@ -863,6 +925,12 @@ export const BoardPage: React.FC<{ apiBaseUrl: string }> = ({ apiBaseUrl }) => {
               />
             </Panel>
           ))}
+
+        {view === 'graph' && <DependencyGraph plan={plan} />}
+
+        {view === 'analytics' && <Analytics plan={plan} />}
+
+        {view === 'progress' && <ProgressTracking plan={plan} />}
 
         <ShortcutsModal isOpen={showShortcuts} onClose={() => setShowShortcuts(false)} />
 
